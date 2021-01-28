@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">WeatherAppBySSM</string>
+    <string name="last_update">Last update:</string>
+    <string name="show_details">Show details</string>
+    <string name="hide_details">Hide details</string>
+    <string name="wind">Wind</string>
+    <string name="pressure">Pressure</string>
+    <string name="humidity">Humidity</string>
+    <string name="weather_forecast_for_the_next_few_days">Weather forecast for the next few days:</string>
+</resources>
