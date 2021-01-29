@@ -1,6 +1,7 @@
 package com.example.weatherappbyssm
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.AsyncTask
@@ -24,6 +25,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
+import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -120,6 +124,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         locationRequest()
     }
 
+    override fun onConnectionSuspended(p0: Int) {
+        googleApiClient!!.connect()
+    }
+
+    override fun onConnectionFailed(p0: ConnectionResult) {
+        Log.i("ERROR", "Connection is failed, error code: " + p0.errorCode)
+    }
+
+
     private fun locationRequest() {
         locationRequest = LocationRequest()
         //Интервал запроса координат = 20 с (обновление)
@@ -147,20 +160,20 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         )
     }
 
-    override fun onConnectionSuspended(p0: Int) {
-        googleApiClient!!.connect()
-    }
-
-    override fun onConnectionFailed(p0: ConnectionResult) {
-        Log.i("ERROR", "Connection is failed, error code: " + p0.errorCode)
-    }
-
     override fun onLocationChanged(location: Location?) {
-        GetCurrentWeatherForecast().execute(
-            CommonObject.apiRequest(
-                location!!.latitude.toString(), location.longitude.toString()
+        Presenter().execute(
+            CommonObject.apiRequestCurrentWeather(
+                location!!.latitude.toString(),
+                location.longitude.toString()
             )
         )
+
+        /*Presenter().execute(
+            CommonObject.apiRequestWeatherForecast(
+                location!!.latitude.toString(),
+                location.longitude.toString()
+            )
+        )*/
     }
 
 
@@ -173,6 +186,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onDestroy() {
         googleApiClient!!.disconnect()
+        Presenter().cancel()
 
         super.onDestroy()
     }
@@ -184,58 +198,82 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    private inner class GetCurrentWeatherForecast : AsyncTask<String, Void, String>() {
+    inner class Presenter : CoroutineScope {
+        private var job: Job = Job()
+        override val coroutineContext: CoroutineContext
+            get() = Dispatchers.Main + job // to run code in Main(UI) Thread
 
-        override fun onPreExecute() {
-            super.onPreExecute()
+        //Остановка работы Coroutine, когда пользователь звкрывает окно
+        fun cancel() {
+            job.cancel()
+        }
 
-            mainContainer.visibility = View.GONE
+        fun execute(url: String) = launch {
+            onPreExecute()
+            val result = doInBackground(url) // работает в фоновом потоке, не блокируя основной поток
+            onPostExecute(result)
+        }
+
+        private suspend fun doInBackground(url: String): String =
+            withContext(Dispatchers.IO) { // для заупска кода в фоновом потоке
+                val okHttpHelper = OkHttpHelper()
+
+                return@withContext okHttpHelper.makeRequest(url)
+            }
+
+        // Runs on the Main(UI) Thread
+        private fun onPreExecute() {
+            mainContainer.visibility = View.INVISIBLE
             loaderProgressBar.visibility = View.VISIBLE
         }
 
-        override fun doInBackground(vararg params: String): String {
-            val urlString = params[0]
-            val okHttpHelper = OkHttpHelper()
-
-            return okHttpHelper.makeRequest(urlString)
+        // Runs on the Main(UI) Thread
+        private fun onPostExecute(result: String) {
+            getDataFromJson(result)
+            showWeatherDataUI()
+            showHideWeatherDetails()
         }
+    }
 
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
+    fun showWeatherDataUI() {
+        loaderProgressBar.visibility = View.INVISIBLE
+        mainContainer.visibility = View.VISIBLE
+        showHideWeatherDetailsButtonsContainer.visibility = View.VISIBLE
 
-            val gson = Gson()
-            val objectsType = object : TypeToken<Root>() {}.type
+        //Отображение данных о погоде
+        cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
+        cityCoordinatesTextView.text =
+            "${openWeatherMap.coord!!.lat}, ${openWeatherMap.coord!!.lon}"
+        weatherStatus.text = "${openWeatherMap.weather!![0].description}"
+        currentTemperatureTextView.text = "${(openWeatherMap.main!!.temp).toInt()}°C"
+        lastWeatherUpdateAtTextView.text = "Last update: " + CommonObject.currentDate
+        windTextView.text = "${openWeatherMap.wind!!.speed} m/s"
+        pressureTextView.text = "${openWeatherMap.main!!.pressure} hPa"
+        humidityTextView.text = "${openWeatherMap.main!!.humidity} %"
+        sunriseTextView.text =
+            "Sunrise at: " + CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
+        sunsetTextView.text =
+            "Sunset at: " + CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
 
-            openWeatherMap = gson.fromJson<Root>(result, objectsType)
+        //Показ соответсвующих текущей погоде изображений
+        Picasso.with(this@MainActivity)
+            .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
+            .into(weatherImageView)
+    }
 
-            loaderProgressBar.visibility = View.GONE
-            mainContainer.visibility = View.VISIBLE
-            showWeatherDetails.visibility = View.VISIBLE
-            hideWeatherDetails.visibility = View.VISIBLE
+    private fun getDataFromJson(result: String?) {
+        val gson = Gson()
+        val objectsType = object : TypeToken<Root>() {}.type
 
-            //Отображение данных о погоде
-            cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
-            cityCoordinatesTextView.text =
-                "${openWeatherMap.coord!!.lat}, ${openWeatherMap.coord!!.lon}"
-            weatherStatus.text = "${openWeatherMap.weather!![0].description}"
-            currentTemperatureTextView.text = "${(openWeatherMap.main!!.temp).toInt()}°C"
-            lastWeatherUpdateAtTextView.text = "Last update: " + CommonObject.currentDate
-            windTextView.text = "${openWeatherMap.wind!!.speed} m/s"
-            pressureTextView.text = "${openWeatherMap.main!!.pressure} hPa"
-            humidityTextView.text = "${openWeatherMap.main!!.humidity} %"
+        openWeatherMap = gson.fromJson<Root>(result, objectsType)
+    }
 
-            //Показ соответсвующих текущей погоде изображений
-            Picasso.with(this@MainActivity)
-                .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
-                .into(weatherImageView)
-
-            showWeatherDetails.setOnClickListener {
-                detailsContainer.visibility = View.VISIBLE
-            }
-            hideWeatherDetails.setOnClickListener {
-                detailsContainer.visibility = View.GONE
-            }
-
+    private fun showHideWeatherDetails() {
+        showWeatherDetailsButton.setOnClickListener {
+            detailsContainer.visibility = View.VISIBLE
+        }
+        hideWeatherDetailsButton.setOnClickListener {
+            detailsContainer.visibility = View.INVISIBLE
         }
     }
 }

@@ -10,8 +10,7 @@
     <RelativeLayout
         android:id="@+id/mainContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/locationContainer"
@@ -56,14 +55,14 @@
                 android:id="@+id/weatherStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/currentTemperatureTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-thin"
-                android:textSize="90sp" />
+                android:textSize="80sp" />
 
             <TextView
                 android:id="@+id/lastWeatherUpdateAtTextView"
@@ -76,28 +75,42 @@
                 android:layout_height="20dp" />
 
             <LinearLayout
+                android:id="@+id/showHideWeatherDetailsButtonsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="invisible">
 
-                <TextView
-                    android:id="@+id/showWeatherDetails"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <Button
+                    android:id="@+id/showWeatherDetailsButton"
+                    android:layout_width="100dp"
+                    android:layout_height="30dp"
+                    android:background="@color/grey"
+                    android:shadowColor="@color/black"
+                    android:shadowDx="-2"
+                    android:shadowDy="2"
+                    android:shadowRadius="0.01"
                     android:text="@string/show_details"
-                    android:visibility="gone" />
+                    android:textAllCaps="true"
+                    android:textSize="12sp" />
 
                 <Space
                     android:layout_width="30dp"
                     android:layout_height="wrap_content" />
 
-                <TextView
-                    android:id="@+id/hideWeatherDetails"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <Button
+                    android:id="@+id/hideWeatherDetailsButton"
+                    android:layout_width="90dp"
+                    android:layout_height="30dp"
+                    android:background="@color/grey"
+                    android:shadowColor="@color/black"
+                    android:shadowDx="-2"
+                    android:shadowDy="2"
+                    android:shadowRadius="0.01"
                     android:text="@string/hide_details"
-                    android:visibility="gone" />
+                    android:textAllCaps="true"
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
@@ -109,8 +122,12 @@
                 android:id="@+id/detailsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                android:orientation="vertical"
+                android:visibility="invisible">
+
+                <Space
+                    android:layout_width="10dp"
+                    android:layout_height="wrap_content" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -118,15 +135,11 @@
                     android:orientation="horizontal"
                     android:weightSum="3">
 
-                    <Space
-                        android:layout_width="10dp"
-                        android:layout_height="wrap_content" />
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="#3CF1EBF1"
+                        android:background="@color/lightGrey"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -163,7 +176,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="#3CF1EBF1"
+                        android:background="@color/lightGrey"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -199,7 +212,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="#3CF1EBF1"
+                        android:background="@color/lightGrey"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -230,6 +243,40 @@
 
                 </LinearLayout>
 
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/lightGrey"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/sunriseTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp" />
+
+                    <Space
+                        android:layout_width="20dp"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/sunsetTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="10dp"
+                    android:layout_height="wrap_content" />
+
             </LinearLayout>
 
             <Space
@@ -237,7 +284,7 @@
                 android:layout_height="20dp" />
 
             <LinearLayout
-                android:id="@+id/weatherForecast"
+                android:id="@+id/weatherForecastContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
@@ -246,7 +293,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="@string/weather_forecast_for_the_next_few_days"
-                    android:visibility="gone"/>
+                    android:visibility="invisible" />
 
                 <ListView
                     android:id="@+id/weatherForecastListView"

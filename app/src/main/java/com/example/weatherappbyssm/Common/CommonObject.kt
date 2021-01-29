@@ -5,7 +5,7 @@ import java.util.*
 
 object CommonObject {
     val API_KEY = "bca7c80097ffb145abd02c64c80b8bef"
-    val API_URL = "https://api.openweathermap.org/data/2.5/weather"
+    val API_URL = "https://api.openweathermap.org/data/2.5/"
 
     val currentDate: String
         get() {
@@ -15,13 +15,22 @@ object CommonObject {
             return dateFormat.format(date)
         }
 
-    //Запрос к OpenWeatherApi (получение данных о погоде по координатам)
-    fun apiRequest(lat: String, lng: String): String {
+    //Запрос к OpenWeatherApi по координатам (получение данных о текущей погоде)
+    fun apiRequestCurrentWeather(lat: String, lng: String): String {
         var stringBuilder = StringBuilder(API_URL)
-        stringBuilder.append("?lat=${lat}&lon=${lng}&APPID=${API_KEY}&units=metric")
+        stringBuilder.append("weather?lat=${lat}&lon=${lng}&APPID=${API_KEY}&units=metric")
 
         return stringBuilder.toString()
     }
+
+    //Запрос к OpenWeatherApi по координатам (получение 5-дневного прогноза погоды)
+    fun apiRequestWeatherForecast(lat: String, lng: String): String {
+        var stringBuilder = StringBuilder(API_URL)
+        stringBuilder.append("forecast?lat=${lat}&lon=${lng}&APPID=${API_KEY}&units=metric")
+
+        return stringBuilder.toString()
+    }
+
 
     //Получение изображения для текущей погоды
     fun getWeatherImage(icon: String): String {
