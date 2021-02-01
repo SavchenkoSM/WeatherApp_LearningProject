@@ -1,10 +1,14 @@
 package com.example.weatherappbyssm.Common
 
+import android.Manifest
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.location.Location
+import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.checkSelfPermission
+import androidx.core.app.ActivityCompat.requestPermissions
 import com.example.weatherappbyssm.MainActivity
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationListener
@@ -15,6 +19,7 @@ class LocationWorker : LocationListener {
 
     var googleApiClient: GoogleApiClient? = null
     var locationRequest: LocationRequest? = null
+
 
     fun locationRequest() {
         //Интервал запроса координат = 20 с (обновление)

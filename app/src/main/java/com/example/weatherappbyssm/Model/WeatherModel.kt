@@ -6,13 +6,16 @@ class Coord(var lat: Double, var lon: Double)
 
 class Main(
     var temp: Double,
-    var pressure: Double,
-    var humidity: Int,
+    var feels_like: Double,
     var temp_min: Double,
-    var temp_max: Double
+    var temp_max: Double,
+    var pressure: Double,
+    var humidity: Int
 )
 
-class Rain
+class Rain(var _1h: Double, var _3h: Double)
+
+class Snow(var _1h: Double, var _3h: Double)
 
 class Root {
     var coord: Coord? = null
@@ -60,4 +63,4 @@ class Sys(
 
 class Weather(var id: Int, var main: String?, var description: String?, var icon: String?)
 
-class Wind(var speed: Double, var deg: Double)
+class Wind(var speed: Double, var deg: Double, var gust: Double)

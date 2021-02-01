@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         setContentView(R.layout.activity_main)
 
         requestLocationPermissions()
-
         if (isGooglePlayServicesAvailable()) buildGoogleApiClient()
     }
 
@@ -121,16 +120,20 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    override fun onConnected(p0: Bundle?) {
+    override fun onConnected(connectionHint: Bundle?) {
+        Log.i("CONNECTION", "Connected to GoogleApiClient")
+
         locationRequest()
     }
 
-    override fun onConnectionSuspended(p0: Int) {
+    override fun onConnectionSuspended(cause: Int) {
+        Log.i("CONNECTION", "Connection suspended");
+
         googleApiClient!!.connect()
     }
 
-    override fun onConnectionFailed(p0: ConnectionResult) {
-        Log.i("ERROR", "Connection is failed, error code: " + p0.errorCode)
+    override fun onConnectionFailed(connectionResult: ConnectionResult) {
+        Log.i("ERROR", "Connection is failed, error code: " + connectionResult.errorCode)
     }
 
 

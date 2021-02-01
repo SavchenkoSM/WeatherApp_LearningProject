@@ -5,7 +5,6 @@ import okhttp3.Request
 import okhttp3.Response
 
 class OkHttpHelper {
-
     private fun parseResponse(response: Response): Any {
         return response.body?.string() ?: ""
     }
