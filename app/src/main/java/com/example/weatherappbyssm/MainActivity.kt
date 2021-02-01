@@ -12,6 +12,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weatherappbyssm.Common.CommonObject
+import com.example.weatherappbyssm.Common.Constants
+import com.example.weatherappbyssm.Common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
+import com.example.weatherappbyssm.Common.Constants.LONG_INTERVAL
+import com.example.weatherappbyssm.Common.Constants.PERMISSION_REQUEST_CODE
+import com.example.weatherappbyssm.Common.Constants.SHORT_INTERVAL
 import com.example.weatherappbyssm.Common.OkHttpHelper
 import com.example.weatherappbyssm.Model.Root
 import com.google.android.gms.common.ConnectionResult
@@ -32,14 +37,10 @@ import kotlin.coroutines.CoroutineContext
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    //Истечение времени ожидания запроса
-    val PERMISSION_REQUEST_CODE = 1001
-    val GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST = 1000
-
     var googleApiClient: GoogleApiClient? = null
     var locationRequest: LocationRequest? = null
 
-    internal var openWeatherMap = Root()
+    private var openWeatherMap = Root()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,10 +136,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     private fun locationRequest() {
         locationRequest = LocationRequest()
-        //Интервал запроса координат = 20 с (обновление)
-        locationRequest!!.interval = 20000
-        //Интервал запроса координат (продолжительность показа ProgressBar) = 10 с
-        locationRequest!!.fastestInterval = 10000
+        locationRequest!!.interval = LONG_INTERVAL
+        locationRequest!!.fastestInterval = SHORT_INTERVAL
         locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         //Проверка разрешений на определения местополжения
