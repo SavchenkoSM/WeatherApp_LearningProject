@@ -1,5 +1,19 @@
 package com.example.weatherappbyssm.Model
 
+class Clouds(val all: Int)
+
+class Coord(var lat: Double, var lon: Double)
+
+class Main(
+    var temp: Double,
+    var pressure: Double,
+    var humidity: Int,
+    var temp_min: Double,
+    var temp_max: Double
+)
+
+class Rain
+
 class Root {
     var coord: Coord? = null
     var weather: List<Weather>? = null
@@ -34,3 +48,16 @@ class Root {
         this.cod = cod
     }
 }
+
+class Sys(
+    var type: Int,
+    var id: Int,
+    var message: Double,
+    var country: String?,
+    var sunrise: Double,
+    var sunset: Double
+)
+
+class Weather(var id: Int, var main: String?, var description: String?, var icon: String?)
+
+class Wind(var speed: Double, var deg: Double)
