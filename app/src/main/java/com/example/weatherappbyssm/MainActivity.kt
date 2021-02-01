@@ -240,7 +240,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     fun showWeatherDataUI() {
         loaderProgressBar.visibility = View.INVISIBLE
         mainContainer.visibility = View.VISIBLE
-        showHideWeatherDetailsButtonsContainer.visibility = View.VISIBLE
 
         //Отображение данных о погоде
         cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
@@ -248,10 +247,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             "${openWeatherMap.coord!!.lat}, ${openWeatherMap.coord!!.lon}"
         weatherStatus.text = "${openWeatherMap.weather!![0].description}"
         currentTemperatureTextView.text = "${(openWeatherMap.main!!.temp).toInt()}°C"
+        tempFeelsLikeTextView.text = "Feels like: ${(openWeatherMap.main!!.feels_like).toInt()}°C"
         lastWeatherUpdateAtTextView.text = "Last update: " + CommonObject.currentDate
         windTextView.text = "${openWeatherMap.wind!!.speed} m/s"
         pressureTextView.text = "${openWeatherMap.main!!.pressure} hPa"
         humidityTextView.text = "${openWeatherMap.main!!.humidity} %"
+        minTempTextView.text = "Min temp: ${openWeatherMap.main!!.temp_min}°C"
+        maxTempTextView.text = "Max temp: ${openWeatherMap.main!!.temp_max}°C"
         sunriseTextView.text =
             "Sunrise at: " + CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
         sunsetTextView.text =
