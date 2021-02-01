@@ -1,11 +1,11 @@
 package com.example.weatherappbyssm.Common
 
+import com.example.weatherappbyssm.Common.Constants.API_KEY
+import com.example.weatherappbyssm.Common.Constants.API_URL
 import java.text.SimpleDateFormat
 import java.util.*
 
 object CommonObject {
-    val API_KEY = "bca7c80097ffb145abd02c64c80b8bef"
-    val API_URL = "https://api.openweathermap.org/data/2.5/"
 
     val currentDate: String
         get() {
