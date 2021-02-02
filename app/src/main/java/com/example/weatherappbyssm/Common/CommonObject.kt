@@ -15,22 +15,33 @@ object CommonObject {
             return dateFormat.format(date)
         }
 
+    var cityName:String? = null
+    //lateinit var chosenCityName:String
+    var flag = false
+
+
     //Запрос к OpenWeatherApi по координатам (получение данных о текущей погоде)
-    fun apiRequestCurrentWeather(lat: String, lng: String): String {
+    fun apiRequestCurrentWeatherByCoordinates(lat: String, lng: String): String {
         var stringBuilder = StringBuilder(API_URL)
-        stringBuilder.append("weather?lat=${lat}&lon=${lng}&APPID=${API_KEY}&units=metric")
+        stringBuilder.append("weather?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric")
 
         return stringBuilder.toString()
     }
 
     //Запрос к OpenWeatherApi по координатам (получение 5-дневного прогноза погоды)
-    fun apiRequestWeatherForecast(lat: String, lng: String): String {
+    fun apiRequestWeatherForecastByCoordinates(lat: String, lng: String): String {
         var stringBuilder = StringBuilder(API_URL)
-        stringBuilder.append("forecast?lat=${lat}&lon=${lng}&APPID=${API_KEY}&units=metric")
+        stringBuilder.append("forecast?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric")
 
         return stringBuilder.toString()
     }
 
+    fun apiRequestCurrentWeatherByCityName(cityName: String): String {
+        var stringBuilder = StringBuilder(API_URL)
+        stringBuilder.append("weather?q=${cityName}&appid=${API_KEY}&units=metric")
+
+        return stringBuilder.toString()
+    }
 
     //Получение изображения для текущей погоды
     fun getWeatherImage(icon: String): String {

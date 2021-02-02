@@ -49,7 +49,7 @@ class LocationWorker : LocationListener {
 
     override fun onLocationChanged(location: Location?) {
         MainActivity().Presenter().execute(
-            CommonObject.apiRequestCurrentWeather(
+            CommonObject.apiRequestCurrentWeatherByCoordinates(
                 location!!.latitude.toString(),
                 location.longitude.toString()
             )

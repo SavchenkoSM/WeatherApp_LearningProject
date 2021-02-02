@@ -1,19 +1,17 @@
 package com.example.weatherappbyssm
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weatherappbyssm.Common.CommonObject
-import com.example.weatherappbyssm.Common.Constants
 import com.example.weatherappbyssm.Common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
 import com.example.weatherappbyssm.Common.Constants.LONG_INTERVAL
 import com.example.weatherappbyssm.Common.Constants.PERMISSION_REQUEST_CODE
@@ -32,7 +30,6 @@ import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
@@ -132,7 +129,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
     override fun onConnectionSuspended(cause: Int) {
-        Log.i("CONNECTION", "Connection suspended");
+        Log.i("CONNECTION", "Connection suspended")
 
         googleApiClient!!.connect()
     }
@@ -169,20 +166,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onLocationChanged(location: Location?) {
         Presenter().execute(
-            CommonObject.apiRequestCurrentWeather(
+            CommonObject.apiRequestCurrentWeatherByCoordinates(
                 location!!.latitude.toString(),
-                location.longitude.toString()
-            )
-        )
+                location.longitude.toString()))
 
-        /*Presenter().execute(
-            CommonObject.apiRequestWeatherForecast(
-                location!!.latitude.toString(),
-                location.longitude.toString()
-            )
-        )*/
+        /*if (CommonObject.flag){
+            Presenter().execute(
+                CommonObject.apiRequestCurrentWeatherByCityName(
+                    intent.extras?.get("chosenCityName").toString()))
+        }*/
     }
-
 
     override fun onStart() {
         super.onStart()
@@ -210,24 +203,24 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         override val coroutineContext: CoroutineContext
             get() = Dispatchers.Main + job // для выполнения в основном потоке
 
-        //Остановка работы Coroutine, когда пользователь звкрывает окно
+        //Остановка работы Coroutine, когда пользователь закрывает окно
         fun cancel() {
             job.cancel()
         }
 
         fun execute(url: String) = launch {
             onPreExecute()
-            val result =
-                doInBackground(url) // работает в фоновом потоке, не блокируя основной поток
+            // работает в фоновом потоке, не блокируя основной поток
+            val result = doInBackground(url)
             onPostExecute(result)
         }
 
-        private suspend fun doInBackground(url: String): String =
-            withContext(Dispatchers.IO) { // для заупска кода в фоновом потоке
-                val okHttpHelper = OkHttpHelper()
+        // для заупска кода в фоновом потоке
+        private suspend fun doInBackground(url: String): String = withContext(Dispatchers.IO) {
+            val okHttpHelper = OkHttpHelper()
 
-                return@withContext okHttpHelper.makeRequest(url)
-            }
+            return@withContext okHttpHelper.makeRequest(url)
+        }
 
         // Выполнение в основном потоке
         private fun onPreExecute() {
@@ -238,8 +231,17 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         // Выполнение в основном потоке
         private fun onPostExecute(result: String) {
             getDataFromJson(result)
+            CommonObject.cityName = openWeatherMap.name
+
             showWeatherDataUI()
         }
+    }
+
+    private fun getDataFromJson(result: String?) {
+        val gson = Gson()
+        val objectsType = object : TypeToken<Root>() {}.type
+
+        openWeatherMap = gson.fromJson<Root>(result, objectsType)
     }
 
     private fun showWeatherDataUI() {
@@ -268,13 +270,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         Picasso.with(this@MainActivity)
             .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
             .into(weatherImageView)
-    }
-
-    private fun getDataFromJson(result: String?) {
-        val gson = Gson()
-        val objectsType = object : TypeToken<Root>() {}.type
-
-        openWeatherMap = gson.fromJson<Root>(result, objectsType)
     }
 
     override fun onClick(view: View?) {

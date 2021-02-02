@@ -33,7 +33,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp" />
-
         </LinearLayout>
 
         <LinearLayout
@@ -118,7 +117,6 @@
                     android:text="@string/hide_details"
                     android:textAllCaps="true"
                     android:textSize="12sp" />
-
             </LinearLayout>
 
             <Space
@@ -172,7 +170,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="14sp" />
-
                     </LinearLayout>
 
                     <Space
@@ -245,9 +242,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="14sp" />
-
                     </LinearLayout>
-
                 </LinearLayout>
 
                 <Space
@@ -277,7 +272,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="12sp" />
-
                 </LinearLayout>
 
                 <Space
@@ -307,13 +301,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="12sp" />
-
                 </LinearLayout>
 
                 <Space
                     android:layout_width="10dp"
                     android:layout_height="wrap_content" />
-
             </LinearLayout>
 
             <Space
@@ -337,9 +329,7 @@
                     android:id="@+id/weatherForecastListView"
                     android:layout_width="match_parent"
                     android:layout_height="200dp" />
-
             </LinearLayout>
-
         </LinearLayout>
 
         <Button
@@ -348,7 +338,7 @@
             android:layout_height="30dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:background="@color/grey"
+            android:background="@color/colorAccent"
             android:shadowColor="@color/black"
             android:shadowDx="-2"
             android:shadowDy="2"
@@ -356,7 +346,6 @@
             android:text="@string/change_city"
             android:textAllCaps="true"
             android:textSize="12sp" />
-
     </RelativeLayout>
 
     <ProgressBar
@@ -365,5 +354,4 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:visibility="gone" />
-
 </RelativeLayout>
