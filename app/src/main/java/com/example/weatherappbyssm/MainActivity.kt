@@ -2,6 +2,7 @@ package com.example.weatherappbyssm
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.AsyncTask
@@ -35,7 +36,7 @@ import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    GoogleApiClient.OnConnectionFailedListener, LocationListener, View.OnClickListener {
 
     var googleApiClient: GoogleApiClient? = null
     var locationRequest: LocationRequest? = null
@@ -48,6 +49,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         requestLocationPermissions()
         if (isGooglePlayServicesAvailable()) buildGoogleApiClient()
+
+        changeCityButton.setOnClickListener(this)
+        showWeatherDetailsButton.setOnClickListener(this)
+        hideWeatherDetailsButton.setOnClickListener(this)
     }
 
     //Запрос разрешений на доступ к местоположению устройства
@@ -203,7 +208,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     inner class Presenter : CoroutineScope {
         private var job: Job = Job()
         override val coroutineContext: CoroutineContext
-            get() = Dispatchers.Main + job // to run code in Main(UI) Thread
+            get() = Dispatchers.Main + job // для выполнения в основном потоке
 
         //Остановка работы Coroutine, когда пользователь звкрывает окно
         fun cancel() {
@@ -212,7 +217,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         fun execute(url: String) = launch {
             onPreExecute()
-            val result = doInBackground(url) // работает в фоновом потоке, не блокируя основной поток
+            val result =
+                doInBackground(url) // работает в фоновом потоке, не блокируя основной поток
             onPostExecute(result)
         }
 
@@ -223,21 +229,20 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 return@withContext okHttpHelper.makeRequest(url)
             }
 
-        // Runs on the Main(UI) Thread
+        // Выполнение в основном потоке
         private fun onPreExecute() {
             mainContainer.visibility = View.INVISIBLE
             loaderProgressBar.visibility = View.VISIBLE
         }
 
-        // Runs on the Main(UI) Thread
+        // Выполнение в основном потоке
         private fun onPostExecute(result: String) {
             getDataFromJson(result)
             showWeatherDataUI()
-            showHideWeatherDetails()
         }
     }
 
-    fun showWeatherDataUI() {
+    private fun showWeatherDataUI() {
         loaderProgressBar.visibility = View.INVISIBLE
         mainContainer.visibility = View.VISIBLE
 
@@ -272,12 +277,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         openWeatherMap = gson.fromJson<Root>(result, objectsType)
     }
 
-    private fun showHideWeatherDetails() {
-        showWeatherDetailsButton.setOnClickListener {
-            detailsContainer.visibility = View.VISIBLE
-        }
-        hideWeatherDetailsButton.setOnClickListener {
-            detailsContainer.visibility = View.INVISIBLE
+    override fun onClick(view: View?) {
+        when (view) {
+            changeCityButton -> {
+                val intent = Intent(this, AddedCitiesActivity::class.java)
+                startActivity(intent)
+            }
+            showWeatherDetailsButton -> detailsContainer.visibility = View.VISIBLE
+            hideWeatherDetailsButton -> detailsContainer.visibility = View.INVISIBLE
         }
     }
 }

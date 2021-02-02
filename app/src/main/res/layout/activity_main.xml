@@ -342,6 +342,21 @@
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/changeCityButton"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="@color/grey"
+            android:shadowColor="@color/black"
+            android:shadowDx="-2"
+            android:shadowDy="2"
+            android:shadowRadius="0.01"
+            android:text="@string/change_city"
+            android:textAllCaps="true"
+            android:textSize="12sp" />
+
     </RelativeLayout>
 
     <ProgressBar
