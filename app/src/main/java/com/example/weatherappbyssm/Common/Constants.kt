@@ -7,4 +7,5 @@ object Constants {
     const val API_URL = "https://api.openweathermap.org/data/2.5/"
     const val PERMISSION_REQUEST_CODE = 1001
     const val GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST = 1000
+    const val fileName = "citiesList.txt"
 }

@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weatherappbyssm.Common.CommonObject
+import com.example.weatherappbyssm.Common.Constants
 import com.example.weatherappbyssm.Common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
 import com.example.weatherappbyssm.Common.Constants.LONG_INTERVAL
 import com.example.weatherappbyssm.Common.Constants.PERMISSION_REQUEST_CODE
@@ -30,6 +31,7 @@ import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
@@ -43,6 +45,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        CommonObject.isCityChosen = false
 
         requestLocationPermissions()
         if (isGooglePlayServicesAvailable()) buildGoogleApiClient()
@@ -165,16 +169,18 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
     override fun onLocationChanged(location: Location?) {
-        Presenter().execute(
-            CommonObject.apiRequestCurrentWeatherByCoordinates(
-                location!!.latitude.toString(),
-                location.longitude.toString()))
-
-        /*if (CommonObject.flag){
+        if (CommonObject.isCityChosen) {
             Presenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(
-                    intent.extras?.get("chosenCityName").toString()))
-        }*/
+                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString())
+            )
+        } else {
+            Presenter().execute(
+                CommonObject.apiRequestCurrentWeatherByCoordinates(
+                    location!!.latitude.toString(),
+                    location.longitude.toString()
+                )
+            )
+        }
     }
 
     override fun onStart() {
@@ -231,10 +237,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         // Выполнение в основном потоке
         private fun onPostExecute(result: String) {
             getDataFromJson(result)
-            CommonObject.cityName = openWeatherMap.name
-
+            rememberNewCity()
             showWeatherDataUI()
         }
+    }
+
+    private fun rememberNewCity() {
+        if (!CommonObject.isCityChosen)
+            CommonObject.cityName = openWeatherMap.name
     }
 
     private fun getDataFromJson(result: String?) {

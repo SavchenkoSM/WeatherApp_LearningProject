@@ -9,16 +9,14 @@ object CommonObject {
 
     val currentDate: String
         get() {
-            val dateFormat = SimpleDateFormat("dd M yyyy HH:mm")
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm")
             val date = Date()
 
             return dateFormat.format(date)
         }
 
-    var cityName:String? = null
-    //lateinit var chosenCityName:String
-    var flag = false
-
+    var cityName: String? = ""
+    var isCityChosen = false
 
     //Запрос к OpenWeatherApi по координатам (получение данных о текущей погоде)
     fun apiRequestCurrentWeatherByCoordinates(lat: String, lng: String): String {
