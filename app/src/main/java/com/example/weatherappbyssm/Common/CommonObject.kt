@@ -15,6 +15,7 @@ object CommonObject {
             return dateFormat.format(date)
         }
 
+    var newCityName: String? = ""
     var cityName: String? = ""
     var isCityChosen = false
 
@@ -46,7 +47,7 @@ object CommonObject {
         return "https://openweathermap.org/img/wn/${icon}.png"
     }
 
-    //Конвертирование Unix Time Stamp в Date Time
+    //Конвертирование UnixTimeStamp в DateTime
     fun unixTimeStampToDateTime(unixTimeStamp: Double): String {
         val dateFormat = SimpleDateFormat("HH:mm")
         val date = Date()

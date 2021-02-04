@@ -4,15 +4,15 @@ import android.content.Context
 
 class FilesWorker {
 
-    fun writeLinesToFile(context: Context, line: String) {
-        context.openFileOutput(Constants.fileName, Context.MODE_PRIVATE).use { output ->
-            output.write(line.toByteArray())
+    fun writeLineToFile(context: Context, fileName:String, line: String) {
+        context.openFileOutput(fileName, Context.MODE_PRIVATE).use { output ->
+            output.write("${line}\n".toByteArray())
         }
     }
 
-    fun readLinesFromFile(context: Context): List<String> {
+    fun readLinesFromFile(context: Context, fileName:String): List<String> {
         var listFromFile: List<String>
-        context.openFileInput(Constants.fileName).use { stream ->
+        context.openFileInput(fileName).use { stream ->
             listFromFile = stream.bufferedReader().use {
                 it.readLines()
             }

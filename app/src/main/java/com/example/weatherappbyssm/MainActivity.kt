@@ -46,8 +46,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        CommonObject.isCityChosen = false
-
         requestLocationPermissions()
         if (isGooglePlayServicesAvailable()) buildGoogleApiClient()
 
@@ -244,7 +242,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     private fun rememberNewCity() {
         if (!CommonObject.isCityChosen)
-            CommonObject.cityName = openWeatherMap.name
+            CommonObject.newCityName = openWeatherMap.name
     }
 
     private fun getDataFromJson(result: String?) {
