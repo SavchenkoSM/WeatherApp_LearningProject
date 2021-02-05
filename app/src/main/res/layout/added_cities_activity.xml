@@ -14,7 +14,8 @@
         android:gravity="center"
         android:text="@string/choose_city"
         android:textAllCaps="true"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:textColor="@color/white"/>
 
     <Space
         android:layout_width="match_parent"

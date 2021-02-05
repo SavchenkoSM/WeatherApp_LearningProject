@@ -7,9 +7,10 @@
     <string name="pressure">Pressure</string>
     <string name="humidity">Humidity</string>
     <string name="weather_forecast_for_the_next_few_days">Weather forecast for the next few days:</string>
-    <string name="change_city">Change city</string>
+    <string name="change_city"><u>Change city</u></string>
     <string name="choose_city">Choose city</string>
     <string name="update_data">update data</string>
+    <string name="details">details</string>
 
     <string-array name="addedCities">
         <item name="city">Tokyo</item>

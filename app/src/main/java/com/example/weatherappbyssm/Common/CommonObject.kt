@@ -47,7 +47,7 @@ object CommonObject {
 
     //Получение изображения для текущей погоды
     fun getWeatherImage(icon: String): String {
-        return "https://openweathermap.org/img/wn/${icon}.png"
+        return "https://openweathermap.org/img/w/${icon}.png"
     }
 
     //Конвертирование UnixTimeStamp в DateTime

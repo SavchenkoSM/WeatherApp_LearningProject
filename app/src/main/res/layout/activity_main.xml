@@ -3,120 +3,168 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/mainContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/gradient_background"
+        android:orientation="vertical"
+        android:padding="10dp"
         android:visibility="invisible">
 
         <LinearLayout
             android:id="@+id/locationContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:layout_height="330dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:padding="20dp">
 
             <TextView
                 android:id="@+id/cityNameTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_extrabold"
+                android:text="new york"
                 android:textAllCaps="true"
-                android:textSize="24sp" />
+                android:textColor="@color/white"
+                android:textSize="32sp" />
 
             <TextView
                 android:id="@+id/cityCoordinatesTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp" />
+                android:text="22333"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/changeCityTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:fontFamily="@font/open_sans"
+                android:text="@string/change_city"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/overviewContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:background="@drawable/big_circle_corners"
+            android:backgroundTint="@color/white"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:paddingBottom="10dp">
 
-            <ImageView
-                android:id="@+id/weatherImageView"
-                android:layout_width="90dp"
-                android:layout_height="90dp" />
-
-            <TextView
-                android:id="@+id/weatherStatus"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp" />
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/currentTemperatureTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-thin"
-                android:textSize="90sp" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tempFeelsLikeTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/weatherStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="weather status"
+                        android:textAllCaps="true"
+                        android:textColor="@color/darkGrey"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/currentTemperatureTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-thin"
+                        android:text="12 C"
+                        android:textColor="@color/darkGrey"
+                        android:textSize="80sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/weatherImageView"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="end"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/updateDataImageView"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:shadowColor="@color/black"
+                        android:shadowDx="-2"
+                        android:shadowDy="2"
+                        android:shadowRadius="0.01"
+                        android:src="@drawable/update_icon" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tempFeelsLikeTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/darkGrey"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/lastWeatherUpdateAtTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:textColor="@color/darkGrey"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="10dp" />
 
-            <TextView
-                android:id="@+id/lastWeatherUpdateAtTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="20dp" />
-
             <LinearLayout
-                android:id="@+id/showHideWeatherDetailsButtonsContainer"
+                android:id="@+id/detailsButtonsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/showWeatherDetailsButton"
-                    android:layout_width="100dp"
-                    android:layout_height="30dp"
-                    android:background="@color/grey"
-                    android:shadowColor="@color/black"
-                    android:shadowDx="-2"
-                    android:shadowDy="2"
-                    android:shadowRadius="0.01"
-                    android:text="@string/show_details"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/details"
                     android:textAllCaps="true"
-                    android:textSize="12sp" />
+                    android:textColor="@color/darkBlue"
+                    android:textSize="16sp" />
 
-                <Space
-                    android:layout_width="30dp"
-                    android:layout_height="wrap_content" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@color/darkBlue" />
 
-                <Button
-                    android:id="@+id/hideWeatherDetailsButton"
-                    android:layout_width="90dp"
-                    android:layout_height="30dp"
-                    android:background="@color/grey"
-                    android:shadowColor="@color/black"
-                    android:shadowDx="-2"
-                    android:shadowDy="2"
-                    android:shadowRadius="0.01"
-                    android:text="@string/hide_details"
-                    android:textAllCaps="true"
-                    android:textSize="12sp" />
             </LinearLayout>
 
             <Space
@@ -127,8 +175,7 @@
                 android:id="@+id/detailsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="invisible">
+                android:orientation="vertical">
 
                 <Space
                     android:layout_width="10dp"
@@ -144,7 +191,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@color/lightGrey"
+                        android:alpha="0.9"
+                        android:background="@drawable/circle_corners"
+                        android:backgroundTint="@color/lightBlue"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -163,6 +212,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/wind"
+                            android:textColor="@color/darkGrey"
                             android:textSize="12sp" />
 
                         <TextView
@@ -180,7 +230,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@color/lightGrey"
+                        android:alpha="0.9"
+                        android:background="@drawable/circle_corners"
+                        android:backgroundTint="@color/lightBlue"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -199,6 +251,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/pressure"
+                            android:textColor="@color/darkGrey"
                             android:textSize="12sp" />
 
                         <TextView
@@ -216,7 +269,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@color/lightGrey"
+                        android:alpha="0.9"
+                        android:background="@drawable/circle_corners"
+                        android:backgroundTint="@color/lightBlue"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -235,6 +290,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/humidity"
+                            android:textColor="@color/darkGrey"
                             android:textSize="12sp" />
 
                         <TextView
@@ -252,7 +308,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/lightGrey"
+                    android:alpha="0.9"
+                    android:background="@drawable/circle_corners"
+                    android:backgroundTint="@color/lightBlue"
                     android:gravity="center"
                     android:orientation="horizontal"
                     android:padding="4dp">
@@ -281,7 +339,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/lightGrey"
+                    android:alpha="0.9"
+                    android:background="@drawable/circle_corners"
+                    android:backgroundTint="@color/lightBlue"
                     android:gravity="center"
                     android:orientation="horizontal"
                     android:padding="4dp">
@@ -302,66 +362,9 @@
                         android:layout_height="wrap_content"
                         android:textSize="12sp" />
                 </LinearLayout>
-
-                <Space
-                    android:layout_width="10dp"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="20dp" />
-
-            <LinearLayout
-                android:id="@+id/weatherForecastContainer"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/weather_forecast_for_the_next_few_days"
-                    android:visibility="invisible" />
-
-                <ListView
-                    android:id="@+id/weatherForecastListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp" />
             </LinearLayout>
         </LinearLayout>
-
-        <Button
-            android:id="@+id/changeCityButton"
-            android:layout_width="100dp"
-            android:layout_height="30dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:background="@color/colorAccent"
-            android:shadowColor="@color/black"
-            android:shadowDx="-2"
-            android:shadowDy="2"
-            android:shadowRadius="0.01"
-            android:text="@string/change_city"
-            android:textAllCaps="true"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/updateDataButton"
-            android:layout_width="100dp"
-            android:layout_height="30dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:background="@color/colorAccent"
-            android:shadowColor="@color/black"
-            android:shadowDx="-2"
-            android:shadowDy="2"
-            android:shadowRadius="0.01"
-            android:text="@string/update_data"
-            android:textAllCaps="true"
-            android:textSize="12sp" />
-    </RelativeLayout>
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/loaderProgressBar"

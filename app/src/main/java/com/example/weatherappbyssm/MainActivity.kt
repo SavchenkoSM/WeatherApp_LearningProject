@@ -32,6 +32,24 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.cityCoordinatesTextView
+import kotlinx.android.synthetic.main.activity_main.cityNameTextView
+import kotlinx.android.synthetic.main.activity_main.currentTemperatureTextView
+import kotlinx.android.synthetic.main.activity_main.detailsContainer
+import kotlinx.android.synthetic.main.activity_main.humidityTextView
+import kotlinx.android.synthetic.main.activity_main.lastWeatherUpdateAtTextView
+import kotlinx.android.synthetic.main.activity_main.loaderProgressBar
+import kotlinx.android.synthetic.main.activity_main.mainContainer
+import kotlinx.android.synthetic.main.activity_main.maxTempTextView
+import kotlinx.android.synthetic.main.activity_main.minTempTextView
+import kotlinx.android.synthetic.main.activity_main.pressureTextView
+import kotlinx.android.synthetic.main.activity_main.sunriseTextView
+import kotlinx.android.synthetic.main.activity_main.sunsetTextView
+import kotlinx.android.synthetic.main.activity_main.tempFeelsLikeTextView
+import kotlinx.android.synthetic.main.activity_main.weatherImageView
+import kotlinx.android.synthetic.main.activity_main.weatherStatus
+import kotlinx.android.synthetic.main.activity_main.windTextView
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -56,10 +74,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString())
             )
 
-        updateDataButton.setOnClickListener(this)
-        changeCityButton.setOnClickListener(this)
-        showWeatherDetailsButton.setOnClickListener(this)
-        hideWeatherDetailsButton.setOnClickListener(this)
+        updateDataImageView.setOnClickListener(this)
+        changeCityTextView.setOnClickListener(this)
     }
 
     // Запрос разрешений на доступ к местоположению устройства
@@ -247,10 +263,11 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         }
     }
 
-
     private fun rememberNewCity() {
-        if (!CommonObject.isCityChosen)
+        if (!CommonObject.isCityChosen) {
             CommonObject.newCityName = openWeatherMap.name
+            updateDataImageView.visibility = View.INVISIBLE
+        }
     }
 
     private fun getDataFromJson(result: String?) {
@@ -271,7 +288,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         weatherStatus.text = "${openWeatherMap.weather!![0].description}"
         currentTemperatureTextView.text = "${(openWeatherMap.main!!.temp).toInt()}°C"
         tempFeelsLikeTextView.text = "Feels like: ${(openWeatherMap.main!!.feels_like).toInt()}°C"
-        lastWeatherUpdateAtTextView.text = "Last update: " + CommonObject.currentDate
+        lastWeatherUpdateAtTextView.text = "Updated at: " + CommonObject.currentDate
         windTextView.text = "${openWeatherMap.wind!!.speed} m/s"
         pressureTextView.text = "${openWeatherMap.main!!.pressure} hPa"
         humidityTextView.text = "${openWeatherMap.main!!.humidity} %"
@@ -290,16 +307,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onClick(view: View?) {
         when (view) {
-            updateDataButton -> Presenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(
-                    CommonObject.cityName.toString()
-                )
-            )
-            changeCityButton -> {
+            updateDataImageView ->
+                if (CommonObject.isCityChosen)
+                    Presenter().execute(
+                        CommonObject.apiRequestCurrentWeatherByCityName(
+                            CommonObject.cityName.toString()
+                        )
+                    )
+            changeCityTextView -> {
                 startActivity(Intent(this, AddedCitiesActivity::class.java))
             }
-            showWeatherDetailsButton -> detailsContainer.visibility = View.VISIBLE
-            hideWeatherDetailsButton -> detailsContainer.visibility = View.INVISIBLE
         }
     }
 }
