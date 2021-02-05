@@ -17,11 +17,13 @@ import com.example.weatherappbyssm.Common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTI
 import com.example.weatherappbyssm.Common.Constants.LONG_INTERVAL
 import com.example.weatherappbyssm.Common.Constants.PERMISSION_REQUEST_CODE
 import com.example.weatherappbyssm.Common.Constants.SHORT_INTERVAL
+import com.example.weatherappbyssm.Common.LocationWorker
 import com.example.weatherappbyssm.Common.OkHttpHelper
 import com.example.weatherappbyssm.Model.Root
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -49,12 +51,18 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         requestLocationPermissions()
         if (isGooglePlayServicesAvailable()) buildGoogleApiClient()
 
+        if (CommonObject.isCityChosen)
+            Presenter().execute(
+                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString())
+            )
+
+        updateDataButton.setOnClickListener(this)
         changeCityButton.setOnClickListener(this)
         showWeatherDetailsButton.setOnClickListener(this)
         hideWeatherDetailsButton.setOnClickListener(this)
     }
 
-    //Запрос разрешений на доступ к местоположению устройства
+    // Запрос разрешений на доступ к местоположению устройства
     private fun requestLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -73,8 +81,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             )
     }
 
-
-    //Проверка доступа к Google Play Services
+    // Проверка доступа к Google Play Services
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -91,7 +98,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         }
     }
 
-    //Проверка поддерживает ли используемое устройство Google Play Services
+
+    // Проверка поддерживает ли используемое устройство Google Play Services
     private fun isGooglePlayServicesAvailable(): Boolean {
         val googleApiAvailability = GoogleApiAvailability()
         val connectionResult = googleApiAvailability.isGooglePlayServicesAvailable(this)
@@ -106,7 +114,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             } else {
                 Toast.makeText(
                     this,
-                    "Google Play Services not supported by this device",
+                    "Google Play Services is not supported by this device",
                     Toast.LENGTH_SHORT
                 ).show()
                 finish()
@@ -128,6 +136,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         Log.i("CONNECTION", "Connected to GoogleApiClient")
 
         locationRequest()
+        locationUpdate()
     }
 
     override fun onConnectionSuspended(cause: Int) {
@@ -140,13 +149,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         Log.i("ERROR", "Connection is failed, error code: " + connectionResult.errorCode)
     }
 
-
+    // Запрос на определение местоположения
     private fun locationRequest() {
         locationRequest = LocationRequest()
         locationRequest!!.interval = LONG_INTERVAL
         locationRequest!!.fastestInterval = SHORT_INTERVAL
         locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    }
 
+    private fun locationUpdate() {
         //Проверка разрешений на определения местополжения
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -159,27 +170,23 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             return
         }
 
-        FusedLocationApi.requestLocationUpdates(
-            googleApiClient,
-            locationRequest,
-            this
-        )
+        if (!CommonObject.isCityChosen)
+            FusedLocationApi.requestLocationUpdates(
+                googleApiClient,
+                locationRequest,
+                this
+            )
     }
 
     override fun onLocationChanged(location: Location?) {
-        if (CommonObject.isCityChosen) {
-            Presenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString())
+        Presenter().execute(
+            CommonObject.apiRequestCurrentWeatherByCoordinates(
+                location!!.latitude.toString(),
+                location.longitude.toString()
             )
-        } else {
-            Presenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCoordinates(
-                    location!!.latitude.toString(),
-                    location.longitude.toString()
-                )
-            )
-        }
+        )
     }
+
 
     override fun onStart() {
         super.onStart()
@@ -205,9 +212,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     inner class Presenter : CoroutineScope {
         private var job: Job = Job()
         override val coroutineContext: CoroutineContext
-            get() = Dispatchers.Main + job // для выполнения в основном потоке
+            get() = Dispatchers.Main + job // Для выполнения в основном потоке
 
-        //Остановка работы Coroutine, когда пользователь закрывает окно
+        // Остановка работы Coroutine, когда пользователь закрывает окно
         fun cancel() {
             job.cancel()
         }
@@ -219,7 +226,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             onPostExecute(result)
         }
 
-        // для заупска кода в фоновом потоке
+        // Для запуска кода в фоновом потоке
         private suspend fun doInBackground(url: String): String = withContext(Dispatchers.IO) {
             val okHttpHelper = OkHttpHelper()
 
@@ -239,6 +246,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             showWeatherDataUI()
         }
     }
+
 
     private fun rememberNewCity() {
         if (!CommonObject.isCityChosen)
@@ -282,9 +290,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onClick(view: View?) {
         when (view) {
+            updateDataButton -> Presenter().execute(
+                CommonObject.apiRequestCurrentWeatherByCityName(
+                    CommonObject.cityName.toString()
+                )
+            )
             changeCityButton -> {
-                val intent = Intent(this, AddedCitiesActivity::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, AddedCitiesActivity::class.java))
             }
             showWeatherDetailsButton -> detailsContainer.visibility = View.VISIBLE
             hideWeatherDetailsButton -> detailsContainer.visibility = View.INVISIBLE

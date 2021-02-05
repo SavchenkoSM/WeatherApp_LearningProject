@@ -346,6 +346,21 @@
             android:text="@string/change_city"
             android:textAllCaps="true"
             android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/updateDataButton"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:background="@color/colorAccent"
+            android:shadowColor="@color/black"
+            android:shadowDx="-2"
+            android:shadowDy="2"
+            android:shadowRadius="0.01"
+            android:text="@string/update_data"
+            android:textAllCaps="true"
+            android:textSize="12sp" />
     </RelativeLayout>
 
     <ProgressBar

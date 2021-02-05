@@ -22,8 +22,10 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
         citiesMutableList.addAll(resources.getStringArray(R.array.addedCities))
 
-        FilesWorker().writeLineToFile(this, Constants.fileName, CommonObject.newCityName.toString())
-        citiesMutableList.addAll(FilesWorker().readLinesFromFile(this, Constants.fileName))
+        FilesWorker().writeLineToFile(
+            this, Constants.fileName, CommonObject.newCityName.toString())
+        citiesMutableList.addAll(
+            FilesWorker().readLinesFromFile(this, Constants.fileName))
 
         val arrayAdapter = ArrayAdapter<String>(
             this,
@@ -41,8 +43,7 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         CommonObject.isCityChosen = true
         CommonObject.cityName = chosenCityName
 
-        //переход на главную активность (отображающую погоду)
-        val intent = Intent(this, MainActivity::class.java)
-        this.startActivity(intent)
+        // Переход на главную активность (отображающую погоду)
+        this.startActivity(Intent(this, MainActivity::class.java))
     }
 }
