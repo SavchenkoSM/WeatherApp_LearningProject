@@ -17,7 +17,7 @@
         <LinearLayout
             android:id="@+id/locationContainer"
             android:layout_width="match_parent"
-            android:layout_height="330dp"
+            android:layout_height="300dp"
             android:gravity="center_vertical"
             android:orientation="vertical"
             android:padding="20dp">
@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/open_sans_extrabold"
-                android:text="new york"
+                android:text="city name"
                 android:textAllCaps="true"
                 android:textColor="@color/white"
                 android:textSize="32sp" />
@@ -36,12 +36,12 @@
                 android:id="@+id/cityCoordinatesTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="22333"
+                android:text="coordinates"
                 android:textColor="@color/white"
                 android:textSize="24sp" />
 
             <Space
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="20dp" />
 
             <TextView
@@ -119,7 +119,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
@@ -127,6 +127,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:text="feels like temp"
                     android:textColor="@color/darkGrey"
                     android:textSize="12sp" />
 
@@ -136,18 +137,19 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="end"
+                    android:text="updated at time"
                     android:textColor="@color/darkGrey"
                     android:textSize="12sp" />
             </LinearLayout>
 
             <Space
                 android:layout_width="wrap_content"
-                android:layout_height="10dp" />
+                android:layout_height="40dp" />
 
             <LinearLayout
                 android:id="@+id/detailsButtonsContainer"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -163,7 +165,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginStart="10dp"
-                    android:background="@color/darkBlue" />
+                    android:background="@color/lightBlue" />
 
             </LinearLayout>
 
@@ -183,7 +185,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
@@ -192,8 +194,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:alpha="0.9"
-                        android:background="@drawable/circle_corners"
-                        android:backgroundTint="@color/lightBlue"
+                        android:background="@drawable/shadow"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -231,8 +232,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:alpha="0.9"
-                        android:background="@drawable/circle_corners"
-                        android:backgroundTint="@color/lightBlue"
+                        android:background="@drawable/shadow"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -270,8 +270,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:alpha="0.9"
-                        android:background="@drawable/circle_corners"
-                        android:backgroundTint="@color/lightBlue"
+                        android:background="@drawable/shadow"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="8dp">
@@ -309,8 +308,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:alpha="0.9"
-                    android:background="@drawable/circle_corners"
-                    android:backgroundTint="@color/lightBlue"
+                    android:background="@drawable/shadow"
                     android:gravity="center"
                     android:orientation="horizontal"
                     android:padding="4dp">
@@ -319,6 +317,7 @@
                         android:id="@+id/minTempTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="min temp"
                         android:textSize="12sp" />
 
                     <Space
@@ -329,6 +328,7 @@
                         android:id="@+id/maxTempTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="max temp"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -340,8 +340,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:alpha="0.9"
-                    android:background="@drawable/circle_corners"
-                    android:backgroundTint="@color/lightBlue"
+                    android:background="@drawable/shadow"
                     android:gravity="center"
                     android:orientation="horizontal"
                     android:padding="4dp">
@@ -350,6 +349,7 @@
                         android:id="@+id/sunriseTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="sunrise time"
                         android:textSize="12sp" />
 
                     <Space
@@ -360,6 +360,7 @@
                         android:id="@+id/sunsetTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="sunset time"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
