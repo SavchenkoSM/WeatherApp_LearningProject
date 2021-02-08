@@ -52,6 +52,7 @@ import kotlinx.android.synthetic.main.activity_main.windTextView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.io.File
+import java.io.IOException
 import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
@@ -152,7 +153,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         Log.i("CONNECTION", "Connected to GoogleApiClient")
 
         locationRequest()
-        locationUpdate()
     }
 
     override fun onConnectionSuspended(cause: Int) {
@@ -171,9 +171,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         locationRequest!!.interval = LONG_INTERVAL
         locationRequest!!.fastestInterval = SHORT_INTERVAL
         locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-    }
 
-    private fun locationUpdate() {
         //Проверка разрешений на определения местополжения
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -246,7 +244,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         private suspend fun doInBackground(url: String): String = withContext(Dispatchers.IO) {
             val okHttpHelper = OkHttpHelper()
 
-            return@withContext okHttpHelper.makeRequest(url)
+            var response: String
+
+            response = try {
+                okHttpHelper.makeRequest(url)
+            } catch (exception: IOException) {
+                exception.printStackTrace()
+                null.toString()
+            }
+            return@withContext response
         }
 
         // Выполнение в основном потоке
@@ -257,9 +263,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         // Выполнение в основном потоке
         private fun onPostExecute(result: String) {
-            getDataFromJson(result)
-            rememberNewCity()
-            showWeatherDataUI()
+            try {
+                getDataFromJson(result)
+                rememberNewCity()
+                showWeatherDataUI()
+            } catch (exception: Exception) {
+                loaderProgressBar.visibility = View.GONE
+                errorTextView.visibility = View.VISIBLE
+                errorTextView.text = getString(R.string.exception)
+            }
         }
     }
 
@@ -281,7 +293,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         loaderProgressBar.visibility = View.INVISIBLE
         mainContainer.visibility = View.VISIBLE
 
-        //Отображение данных о погоде
+        // Отображение данных о погоде
         cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
         cityCoordinatesTextView.text =
             "${openWeatherMap.coord!!.lat}, ${openWeatherMap.coord!!.lon}"
@@ -299,7 +311,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         sunsetTextView.text =
             "Sunset at: " + CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
 
-        //Показ соответсвующих текущей погоде изображений
+        // Показ соответствующих текущей погоде изображений
         Picasso.with(this@MainActivity)
             .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
             .into(weatherImageView)

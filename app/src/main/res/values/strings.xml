@@ -11,6 +11,7 @@
     <string name="choose_city">Choose city</string>
     <string name="update_data">update data</string>
     <string name="details">details</string>
+    <string name="exception">Something went wrong. Check your Internet connection.</string>
 
     <string-array name="addedCities">
         <item name="city">Tokyo</item>
