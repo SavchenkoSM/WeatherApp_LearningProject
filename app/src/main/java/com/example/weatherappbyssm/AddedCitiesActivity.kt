@@ -54,5 +54,6 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
         // Переход на главную активность (отображающую погоду для выбранного города)
         this.startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }
