@@ -20,7 +20,7 @@ object CommonObject {
     var isCityChosen = false
 
     /**Запрос к OpenWeatherApi по координатам (получение данных о текущей погоде)*/
-    fun apiRequestCurrentWeatherByCoordinates(lat: String, lng: String): String {
+    fun apiRequestCurrentWeatherByCoordinates(lat: Double?, lng: Double?): String {
         var stringBuilder = StringBuilder(API_URL)
         stringBuilder.append("weather?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric")
 

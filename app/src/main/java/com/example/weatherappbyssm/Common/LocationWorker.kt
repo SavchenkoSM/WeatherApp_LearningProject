@@ -142,11 +142,6 @@ class LocationWorker : LocationListener, GoogleApiClient.ConnectionCallbacks,
     }
 
     override fun onLocationChanged(location: Location?) {
-        MainActivity().Presenter().execute(
-            CommonObject.apiRequestCurrentWeatherByCoordinates(
-                location!!.latitude.toString(),
-                location.longitude.toString()
-            )
-        )
+        MainActivity().Presenter().execute()
     }
 }

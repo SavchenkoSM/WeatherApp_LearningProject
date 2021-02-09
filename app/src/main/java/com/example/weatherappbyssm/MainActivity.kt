@@ -2,6 +2,7 @@ package com.example.weatherappbyssm
 
 import android.Manifest
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -22,11 +23,10 @@ import com.example.weatherappbyssm.Common.OkHttpHelper
 import com.example.weatherappbyssm.Model.Root
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.android.gms.common.api.GoogleApi
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationListener
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.location.LocationServices.FusedLocationApi
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     var googleApiClient: GoogleApiClient? = null
     var locationRequest: LocationRequest? = null
+    var fusedLocationProviderClient: FusedLocationProviderClient? = null
+    var longitude: Double? = null
+    var latitude: Double? = null
 
     private var openWeatherMap = Root()
 
@@ -69,11 +72,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         requestLocationPermissions()
         if (isGooglePlayServicesAvailable()) buildGoogleApiClient()
-
-        if (CommonObject.isCityChosen)
-            Presenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString())
-            )
 
         updateDataImageView.setOnClickListener(this)
         changeCityTextView.setOnClickListener(this)
@@ -90,6 +88,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         )
+
             requestPermissions(
                 arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -163,14 +162,29 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onConnectionFailed(connectionResult: ConnectionResult) {
         Log.i("ERROR", "Connection is failed, error code: " + connectionResult.errorCode)
+        if (connectionResult.hasResolution()) {
+            try {
+                connectionResult.startResolutionForResult(this, PERMISSION_REQUEST_CODE)
+                googleApiClient!!.connect()
+            } catch (intentException: IntentSender.SendIntentException) {
+                intentException.printStackTrace()
+            }
+        } else {
+            Toast.makeText(this, "Connection is failed. Check your Internet.", Toast.LENGTH_LONG)
+                .show()
+        }
     }
+
 
     // Запрос на определение местоположения
     private fun locationRequest() {
         locationRequest = LocationRequest()
-        locationRequest!!.interval = LONG_INTERVAL
-        locationRequest!!.fastestInterval = SHORT_INTERVAL
+        //Активровать, если нужны интервальные обновления координат
+        /*locationRequest!!.interval = LONG_INTERVAL
+        locationRequest!!.fastestInterval = SHORT_INTERVAL*/
         locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+       /* fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)*/
 
         //Проверка разрешений на определения местополжения
         if (ActivityCompat.checkSelfPermission(
@@ -184,21 +198,31 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             return
         }
 
-        if (!CommonObject.isCityChosen)
-            FusedLocationApi.requestLocationUpdates(
-                googleApiClient,
-                locationRequest,
-                this
-            )
+        FusedLocationApi.requestLocationUpdates(
+            googleApiClient,
+            locationRequest,
+            this
+        )
+
+        /*fusedLocationProviderClient!!.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.myLooper()
+        )*/
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult?) {
+            locationResult?.lastLocation
+            onLocationChanged(locationResult?.lastLocation)
+        }
     }
 
     override fun onLocationChanged(location: Location?) {
-        Presenter().execute(
-            CommonObject.apiRequestCurrentWeatherByCoordinates(
-                location!!.latitude.toString(),
-                location.longitude.toString()
-            )
-        )
+        longitude = location!!.longitude
+        latitude = location.latitude
+
+        Presenter().execute()
     }
 
 
@@ -233,21 +257,29 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             job.cancel()
         }
 
-        fun execute(url: String) = launch {
+        fun execute() = launch {
             onPreExecute()
             // работает в фоновом потоке, не блокируя основной поток
-            val result = doInBackground(url)
+            val result = doInBackground()
             onPostExecute(result)
         }
 
         // Для запуска кода в фоновом потоке
-        private suspend fun doInBackground(url: String): String = withContext(Dispatchers.IO) {
+        private suspend fun doInBackground(): String = withContext(Dispatchers.IO) {
             val okHttpHelper = OkHttpHelper()
-
-            var response: String
+            val response: String
 
             response = try {
-                okHttpHelper.makeRequest(url)
+                if (CommonObject.isCityChosen)
+                    okHttpHelper.makeRequest(
+                        CommonObject.apiRequestCurrentWeatherByCityName(
+                            CommonObject.cityName.toString()
+                        )
+                    )
+                else
+                    okHttpHelper.makeRequest(
+                        CommonObject.apiRequestCurrentWeatherByCoordinates(latitude, longitude)
+                    )
             } catch (exception: IOException) {
                 exception.printStackTrace()
                 null.toString()
@@ -257,7 +289,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         // Выполнение в основном потоке
         private fun onPreExecute() {
-            mainContainer.visibility = View.INVISIBLE
+            mainContainer.visibility = View.GONE
+            errorTextView.visibility = View.GONE
             loaderProgressBar.visibility = View.VISIBLE
         }
 
@@ -269,8 +302,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 showWeatherDataUI()
             } catch (exception: Exception) {
                 loaderProgressBar.visibility = View.GONE
-                errorTextView.visibility = View.VISIBLE
                 errorTextView.text = getString(R.string.exception)
+                errorTextView.visibility = View.VISIBLE
             }
         }
     }
@@ -290,9 +323,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
     private fun showWeatherDataUI() {
-        loaderProgressBar.visibility = View.INVISIBLE
-        mainContainer.visibility = View.VISIBLE
-
         // Отображение данных о погоде
         cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
         cityCoordinatesTextView.text =
@@ -315,17 +345,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         Picasso.with(this@MainActivity)
             .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
             .into(weatherImageView)
+
+        loaderProgressBar.visibility = View.GONE
+        mainContainer.visibility = View.VISIBLE
     }
 
     override fun onClick(view: View?) {
         when (view) {
             updateDataImageView ->
                 if (CommonObject.isCityChosen)
-                    Presenter().execute(
-                        CommonObject.apiRequestCurrentWeatherByCityName(
-                            CommonObject.cityName.toString()
-                        )
-                    )
+                    Presenter().execute()
             changeCityTextView -> {
                 startActivity(Intent(this, AddedCitiesActivity::class.java))
             }
