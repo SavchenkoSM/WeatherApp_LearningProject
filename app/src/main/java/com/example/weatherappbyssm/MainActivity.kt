@@ -42,7 +42,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private var locationRequest: LocationRequest? = null
     private var locationManager: LocationManager? = null
 
-    private var gpsEnabled: Boolean = false
+    private var isGpsEnabled: Boolean = false
+    private var isLocationPermissionGranted: Boolean = false
 
     private var openWeatherMap = Root()
 
@@ -52,15 +53,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         requestLocationPermissions()
 
+        if (isLocationPermissionGranted
+            && isGooglePlayServicesAvailable()) {
+            if (!CommonObject.isCityChosen)
+                checkLocationServicesEnabled()
+            buildGoogleApiClient()
+        }
+
         if (CommonObject.isCityChosen)
             WeatherPresenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString())
-            ) else {
-            if (isGooglePlayServicesAvailable()) {
-                isLocationServicesEnabled()
-                buildGoogleApiClient()
-            }
-        }
+                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString()))
 
         updateDataImageView.setOnClickListener(this)
         changeCityTextView.setOnClickListener(this)
@@ -71,19 +73,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private fun requestLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
         )
             requestPermissions(
                 arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ), PERMISSION_REQUEST_CODE
+                    Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_REQUEST_CODE
             )
+        else
+            isLocationPermissionGranted = true
     }
 
     /**Проверка, даны ли необходимые разрешения и последующий запуск получения местоположения*/
@@ -97,27 +99,33 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
-                    if (isGooglePlayServicesAvailable())
+                    if (isGooglePlayServicesAvailable()) {
+                        if (!CommonObject.isCityChosen)
+                            checkLocationServicesEnabled()
                         buildGoogleApiClient()
+                    }
                 }
         }
     }
 
     /**Проверка включен ли GPS*/
-    private fun isLocationServicesEnabled(): Boolean {
+    private fun checkLocationServicesEnabled(): Boolean {
         locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         try {
-            gpsEnabled = locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            isGpsEnabled = locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (gpsException: Exception) {
-            Toast.makeText(this, "Something went wrong. Check your GPS enabling", Toast.LENGTH_LONG)
-                .show()
+            Toast.makeText(
+                this,
+                "Something went wrong. Check your GPS enabling",
+                Toast.LENGTH_LONG
+            ).show()
         }
-        return buildAlertDialogLocationServicesDisabled(gpsEnabled)
+        return buildAlertDialogLocationServicesDisabled(isGpsEnabled)
     }
 
     /**Вывод диалогового окна с последующим переводом пользователя в настройки для включения GPS*/
-    private fun buildAlertDialogLocationServicesDisabled(gpsEnabled: Boolean): Boolean {
-        if (!gpsEnabled) {
+    private fun buildAlertDialogLocationServicesDisabled(isGpsEnabled: Boolean): Boolean {
+        if (!isGpsEnabled) {
             val alertDialogBuilder = AlertDialog.Builder(this, R.style.AlertDialog)
             alertDialogBuilder.setMessage("GPS is disabled. Please, enable it for the app work")
                 .setTitle("GPS disabled")
@@ -270,7 +278,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             onPostExecute(result)
         }
 
-        // Для запуска кода в фоновом потоке
+        // Для запуска в фоновом потоке
         private suspend fun doInBackground(url: String): String = withContext(Dispatchers.IO) {
             val okHttpHelper = OkHttpHelper()
             val response: String
@@ -305,6 +313,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+
     /**Запоминание нового города при измененении местоположения*/
     private fun rememberNewCity() {
         if (!CommonObject.isCityChosen) {
@@ -327,7 +336,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
         cityCoordinatesTextView.text =
             "${openWeatherMap.coord!!.lat}, ${openWeatherMap.coord!!.lon}"
-        weatherStatus.text = "${openWeatherMap.weather!![0].description}"
+        weatherStatusTextView.text = "${openWeatherMap.weather!![0].description}"
         currentTemperatureTextView.text = "${(openWeatherMap.main!!.temp).toInt()}°C"
         tempFeelsLikeTextView.text = "Feels like: ${(openWeatherMap.main!!.feels_like).toInt()}°C"
         lastWeatherUpdateAtTextView.text = "Updated at: " + CommonObject.currentDate

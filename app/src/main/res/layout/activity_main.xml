@@ -75,7 +75,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/weatherStatus"
+                        android:id="@+id/weatherStatusTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="weather status"
