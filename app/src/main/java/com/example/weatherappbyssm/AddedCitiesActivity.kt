@@ -7,35 +7,29 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherappbyssm.Common.CommonObject
-import com.example.weatherappbyssm.Common.Constants
-import com.example.weatherappbyssm.Common.FilesWorker
+import com.example.weatherappbyssm.Common.DBHelper
 import kotlinx.android.synthetic.main.added_cities_activity.*
 
 
 class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
-    private var citiesMutableList: MutableList<String> = arrayListOf()
+    private var dbHelper: DBHelper? = null
+    private var citiesMutableList: MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.added_cities_activity)
 
-        citiesMutableList.addAll(resources.getStringArray(R.array.addedCities))
+        dbHelper = DBHelper(this)
 
-        for (i in 0 until citiesMutableList.size)
-            FilesWorker().writeLineToFile(
-                this, Constants.fileName,
-                citiesMutableList[i]
-            )
-        citiesMutableList.clear()
+        // Добавление нового города в БД, если он там отсутсвует
+        dbHelper!!.addNewCityToDB(CommonObject.newCityName.toString())
+        // Получение списка городов из БД
+        citiesMutableList = dbHelper!!.getAllCitiesFromDB()
+        // Сортировка списка городов по алфавиту
+        citiesMutableList.sort()
 
-        FilesWorker().writeLineToFile(
-            this, Constants.fileName, CommonObject.newCityName.toString()
-        )
-        citiesMutableList.addAll(
-            FilesWorker().readLinesFromFile(this, Constants.fileName)
-        )
-
+        // Вывод полученного списка городов на экран
         val arrayAdapter = ArrayAdapter<String>(
             this,
             R.layout.cities_list_item,
@@ -46,9 +40,11 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         citiesListView.onItemClickListener = this
     }
 
+    // Обработка выбора города
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val chosenCityName: String = parent?.getItemAtPosition(position).toString()
 
+        // Когда город выбран: установка флага в true и запись выбранного города в переменную
         CommonObject.isCityChosen = true
         CommonObject.cityName = chosenCityName
 
