@@ -8,12 +8,12 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.widget.Toast
 import com.example.weatherappbyssm.R
 
-class DBHelper(private val context: Context) :
+open class DBHelper(private val context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
-    private lateinit var db: SQLiteDatabase
-    private lateinit var values: ContentValues
-    private lateinit var cursor: Cursor
+    protected lateinit var db: SQLiteDatabase
+    protected lateinit var values: ContentValues
+    protected lateinit var cursor: Cursor
 
     private lateinit var citiesMutableList: MutableList<String>
 
@@ -23,16 +23,16 @@ class DBHelper(private val context: Context) :
         private const val DB_VERSION = 1
 
         // Описание таблиц
-        private const val TABLE_NAME = "cities"
-        private const val ID = "_id"
-        private const val CITY_NAME = "CityName"
+        const val TABLE_NAME = "cities"
+        const val ID = "_id"
+        const val CITY_NAME = "CityName"
 
         // Запросы к БД
         private const val CREATE_CITIES_TABLE =
             "CREATE TABLE $TABLE_NAME ($ID Integer PRIMARY KEY, $CITY_NAME TEXT)"
 
         private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS $TABLE_NAME"
-        private const val SELECT_ALL_QUERY = "SELECT * FROM $TABLE_NAME"
+        const val SELECT_ALL_QUERY = "SELECT * FROM $TABLE_NAME"
     }
 
     /**
@@ -41,6 +41,9 @@ class DBHelper(private val context: Context) :
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(CREATE_CITIES_TABLE)
         addDefaultCitiesListToDB(db)
+
+        db?.execSQL(CacheDataDB.CREATE_CACHE_TABLE)
+        db?.execSQL(CacheDataDB.INSERT_DEFAULT_ROW)
     }
 
     /**

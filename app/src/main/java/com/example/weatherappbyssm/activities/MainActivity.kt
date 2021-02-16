@@ -15,10 +15,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weatherappbyssm.R
-import com.example.weatherappbyssm.common.CommonObject
+import com.example.weatherappbyssm.common.*
 import com.example.weatherappbyssm.common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
 import com.example.weatherappbyssm.common.Constants.PERMISSION_REQUEST_CODE
-import com.example.weatherappbyssm.common.OkHttpHelper
 import com.example.weatherappbyssm.models.Root
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -33,8 +32,8 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.io.IOException
+import java.util.*
 import kotlin.coroutines.CoroutineContext
-
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, LocationListener, View.OnClickListener {
@@ -48,14 +47,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
     private var openWeatherMap = Root()
 
+    private var dbHelper: DBHelper? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        dbHelper = DBHelper(this)
+
         requestLocationPermissions()
 
         if (isLocationPermissionGranted
-            && isGooglePlayServicesAvailable()) {
+            && isGooglePlayServicesAvailable()
+        ) {
             if (!CommonObject.isCityChosen)
                 checkLocationServicesEnabled()
             buildGoogleApiClient()
@@ -63,7 +67,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         if (CommonObject.isCityChosen)
             WeatherPresenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.chosenCityName.toString()))
+                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.chosenCityName.toString())
+            )
 
         updateDataImageView.setOnClickListener(this)
         changeCityTextView.setOnClickListener(this)
@@ -76,15 +81,18 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private fun requestLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
         )
             requestPermissions(
                 arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ),
                 PERMISSION_REQUEST_CODE
             )
         else
@@ -102,7 +110,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         when (requestCode) {
             PERMISSION_REQUEST_CODE ->
                 if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
                     Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
                     if (isGooglePlayServicesAvailable()) {
                         if (!CommonObject.isCityChosen)
@@ -135,7 +144,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      */
     private fun buildAlertDialogLocationServicesDisabled(isGpsEnabled: Boolean): Boolean {
         if (!isGpsEnabled) {
-            val alertDialogBuilder = AlertDialog.Builder(this,
+            val alertDialogBuilder = AlertDialog.Builder(
+                this,
                 R.style.AlertDialog
             )
             alertDialogBuilder.setMessage("GPS is disabled. Please, enable it for the app work")
@@ -368,26 +378,44 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
+     * Запись набора данных с сервера API OpenWeatherMap для отображения
+     */
+    private fun openWeatherMapDataForDisplay() {
+        WeatherDataForDisplay.cityName = openWeatherMap.name
+        WeatherDataForDisplay.country = openWeatherMap.sys!!.country
+        WeatherDataForDisplay.latitude = openWeatherMap.coord!!.lat
+        WeatherDataForDisplay.longitude = openWeatherMap.coord!!.lon
+        WeatherDataForDisplay.skyStatus = openWeatherMap.weather!![0].description
+        WeatherDataForDisplay.currentTemp = openWeatherMap.main!!.temp
+        WeatherDataForDisplay.tempFeelsLike = openWeatherMap.main!!.feels_like
+        WeatherDataForDisplay.lastWeatherUpdateTime = CommonObject.currentDate
+        WeatherDataForDisplay.windSpeed = openWeatherMap.wind!!.speed
+        WeatherDataForDisplay.pressure = openWeatherMap.main!!.pressure
+        WeatherDataForDisplay.humindity = openWeatherMap.main!!.humidity
+        WeatherDataForDisplay.minTemp = openWeatherMap.main!!.temp_min
+        WeatherDataForDisplay.maxTemp = openWeatherMap.main!!.temp_max
+        WeatherDataForDisplay.sunriseTime = CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
+        WeatherDataForDisplay.sunsetTime = CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
+    }
+
+    /**
      * Отображение данных о погоде
      */
     private fun showWeatherDataUI() {
         // Отображение данных о погоде
-        cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
-        cityCoordinatesTextView.text =
-            "${openWeatherMap.coord!!.lat}, ${openWeatherMap.coord!!.lon}"
-        weatherStatusTextView.text = "${openWeatherMap.weather!![0].description}"
-        currentTemperatureTextView.text = "${(openWeatherMap.main!!.temp).toInt()}°C"
-        tempFeelsLikeTextView.text = "Feels like: ${(openWeatherMap.main!!.feels_like).toInt()}°C"
-        lastWeatherUpdateAtTextView.text = "Updated at: " + CommonObject.currentDate
-        windTextView.text = "${openWeatherMap.wind!!.speed} m/s"
-        pressureTextView.text = "${openWeatherMap.main!!.pressure} hPa"
-        humidityTextView.text = "${openWeatherMap.main!!.humidity} %"
-        minTempTextView.text = "Min temp: ${openWeatherMap.main!!.temp_min}°C"
-        maxTempTextView.text = "Max temp: ${openWeatherMap.main!!.temp_max}°C"
-        sunriseTextView.text =
-            "Sunrise at: " + CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
-        sunsetTextView.text =
-            "Sunset at: " + CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
+        cityNameTextView.text = "${WeatherDataForDisplay.cityName}, ${WeatherDataForDisplay.country}"
+        cityCoordinatesTextView.text = "${WeatherDataForDisplay.latitude}, ${WeatherDataForDisplay.longitude}"
+        weatherStatusTextView.text = WeatherDataForDisplay.skyStatus
+        currentTemperatureTextView.text = "${WeatherDataForDisplay.currentTemp.toInt()}°C"
+        tempFeelsLikeTextView.text = "Feels like: ${WeatherDataForDisplay.tempFeelsLike.toInt()}°C"
+        lastWeatherUpdateAtTextView.text = "Updated at: ${WeatherDataForDisplay.lastWeatherUpdateTime}"
+        windTextView.text = "${WeatherDataForDisplay.windSpeed} m/s"
+        pressureTextView.text = "${WeatherDataForDisplay.pressure} hPa"
+        humidityTextView.text = "${WeatherDataForDisplay.humindity} %"
+        minTempTextView.text = "Min temp: ${WeatherDataForDisplay.minTemp}°C"
+        maxTempTextView.text = "Max temp: ${WeatherDataForDisplay.maxTemp}°C"
+        sunriseTextView.text = "Sunrise at: ${WeatherDataForDisplay.sunriseTime}"
+        sunsetTextView.text = "Sunset at: ${WeatherDataForDisplay.sunsetTime}"
 
         // Показ соответствующих текущей погоде изображений
         Picasso.with(this@MainActivity)
@@ -397,7 +425,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         loaderProgressBar.visibility = View.GONE
         mainContainer.visibility = View.VISIBLE
     }
-
 
     /**
      * Обработка нажатий на компоненты взаимодействия
