@@ -1,4 +1,4 @@
-package com.example.weatherappbyssm.Model
+package com.example.weatherappbyssm.models
 
 class CitiesModel {
     //var id: Int = 0

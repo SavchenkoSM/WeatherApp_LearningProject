@@ -1,4 +1,4 @@
-package com.example.weatherappbyssm.Common
+package com.example.weatherappbyssm.common
 
 import okhttp3.OkHttpClient
 import okhttp3.Request

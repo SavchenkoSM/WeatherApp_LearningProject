@@ -1,4 +1,4 @@
-package com.example.weatherappbyssm
+package com.example.weatherappbyssm.activities
 
 import android.Manifest
 import android.content.Context
@@ -14,11 +14,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.example.weatherappbyssm.Common.CommonObject
-import com.example.weatherappbyssm.Common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
-import com.example.weatherappbyssm.Common.Constants.PERMISSION_REQUEST_CODE
-import com.example.weatherappbyssm.Common.OkHttpHelper
-import com.example.weatherappbyssm.Model.Root
+import com.example.weatherappbyssm.R
+import com.example.weatherappbyssm.common.CommonObject
+import com.example.weatherappbyssm.common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
+import com.example.weatherappbyssm.common.Constants.PERMISSION_REQUEST_CODE
+import com.example.weatherappbyssm.common.OkHttpHelper
+import com.example.weatherappbyssm.models.Root
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.GoogleApiClient
@@ -62,14 +63,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         if (CommonObject.isCityChosen)
             WeatherPresenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.cityName.toString()))
+                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.chosenCityName.toString()))
 
         updateDataImageView.setOnClickListener(this)
         changeCityTextView.setOnClickListener(this)
     }
 
 
-    /**Запрос разрешений на доступ к местоположению устройства*/
+    /**
+     * Запрос разрешений на доступ к местоположению устройства
+     */
     private fun requestLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -88,7 +91,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             isLocationPermissionGranted = true
     }
 
-    /**Проверка, даны ли необходимые разрешения и последующий запуск получения местоположения*/
+    /**
+     * Проверка, даны ли необходимые разрешения и последующий запуск получения местоположения
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -108,7 +113,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         }
     }
 
-    /**Проверка включен ли GPS*/
+    /**
+     * Проверка включен ли GPS
+     */
     private fun checkLocationServicesEnabled(): Boolean {
         locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         try {
@@ -123,10 +130,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         return buildAlertDialogLocationServicesDisabled(isGpsEnabled)
     }
 
-    /**Вывод диалогового окна с последующим переводом пользователя в настройки для включения GPS*/
+    /**
+     * Вывод диалогового окна с последующим переводом пользователя в настройки для включения GPS
+     */
     private fun buildAlertDialogLocationServicesDisabled(isGpsEnabled: Boolean): Boolean {
         if (!isGpsEnabled) {
-            val alertDialogBuilder = AlertDialog.Builder(this, R.style.AlertDialog)
+            val alertDialogBuilder = AlertDialog.Builder(this,
+                R.style.AlertDialog
+            )
             alertDialogBuilder.setMessage("GPS is disabled. Please, enable it for the app work")
                 .setTitle("GPS disabled")
                 .setCancelable(false)
@@ -142,7 +153,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    /**Проверка, поддерживает ли используемое устройство Google Play Services*/
+    /**
+     * Проверка, поддерживает ли используемое устройство Google Play Services
+     */
     private fun isGooglePlayServicesAvailable(): Boolean {
         val googleApiAvailability = GoogleApiAvailability()
         val connectionResult = googleApiAvailability.isGooglePlayServicesAvailable(this)
@@ -167,7 +180,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         return true
     }
 
-    /**Построение Api Client для определения местоположения и подключение*/
+    /**
+     * Построение Api Client для определения местоположения и подключение
+     */
     private fun buildGoogleApiClient() {
         locationClient = GoogleApiClient.Builder(this)
             .addConnectionCallbacks(this)
@@ -179,7 +194,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    /**Обработка при установленном подключении*/
+    /**
+     * Обработка при установленном подключении
+     */
     override fun onConnected(connectionHint: Bundle?) {
         Log.i("CONNECTION", "Connected to GoogleApiClient successfully")
 
@@ -187,20 +204,26 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             locationRequest()
     }
 
-    /**Обработка приостановления подключения*/
+    /**
+     * Обработка приостановления подключения
+     */
     override fun onConnectionSuspended(cause: Int) {
         Log.i("CONNECTION", "Connection suspended")
 
         locationClient!!.connect()
     }
 
-    /**Обработка ошибки подключения*/
+    /**
+     * Обработка ошибки подключения
+     */
     override fun onConnectionFailed(connectionResult: ConnectionResult) {
         Log.i("ERROR", "Connection is failed, error code: " + connectionResult.errorCode)
     }
 
 
-    /**Запрос на определение текущего местоположения*/
+    /**
+     * Запрос на определение текущего местоположения
+     */
     private fun locationRequest() {
         locationRequest = LocationRequest()
         locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -223,7 +246,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         )
     }
 
-    /**Обработка изменения текущего местоположения*/
+    /**
+     * Обработка изменения текущего местоположения
+     */
     override fun onLocationChanged(location: Location?) {
         WeatherPresenter().execute(
             CommonObject.apiRequestCurrentWeatherByCoordinates(
@@ -234,8 +259,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    /**Обработка жизненного цикла активности*/
-    /**Возобновление работы приостановленного приложения*/
+    /**
+     * Обработка жизненного цикла активности
+     * Возобновление работы приостановленного приложения
+     */
     override fun onStart() {
         super.onStart()
 
@@ -243,7 +270,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             locationClient!!.connect()
     }
 
-    /**Прекращение всех процессов и разрушение активности по окончании работы*/
+    /**
+     * Прекращение всех процессов и разрушение активности по окончании работы
+     */
     override fun onDestroy() {
         locationClient!!.disconnect()
         WeatherPresenter().cancel()
@@ -251,8 +280,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         super.onDestroy()
     }
 
-    /**Вызывается, когда активность выполняется на переднем плане,
-     * инициализирует приостановленные компоненты*/
+    /**
+     * Вызывается, когда активность выполняется на переднем плане,
+     * инициализирует приостановленные компоненты
+     */
     override fun onResume() {
         super.onResume()
 
@@ -260,7 +291,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    /**Coroutine для работы с отображением погоды*/
+    /**
+     * Coroutine для работы с отображением погоды
+     */
     inner class WeatherPresenter : CoroutineScope {
         private var job: Job = Job()
         override val coroutineContext: CoroutineContext
@@ -314,7 +347,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    /**Запоминание нового города при измененении местоположения*/
+    /**
+     * Запоминание нового города при измененении местоположения
+     */
     private fun rememberNewCity() {
         if (!CommonObject.isCityChosen) {
             CommonObject.newCityName = openWeatherMap.name
@@ -322,7 +357,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         }
     }
 
-    /**Получение данных о погоде из Json*/
+    /**
+     * Получение данных о погоде из Json
+     */
     private fun getWeatherDataFromJson(result: String?) {
         val gson = Gson()
         val objectsType = object : TypeToken<Root>() {}.type
@@ -330,7 +367,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         openWeatherMap = gson.fromJson<Root>(result, objectsType)
     }
 
-    /**Отображение данных о погоде*/
+    /**
+     * Отображение данных о погоде
+     */
     private fun showWeatherDataUI() {
         // Отображение данных о погоде
         cityNameTextView.text = "${openWeatherMap.name}, ${openWeatherMap.sys!!.country}"
@@ -360,14 +399,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    /**Обработка нажатий на компоненты взаимодействия*/
+    /**
+     * Обработка нажатий на компоненты взаимодействия
+     */
     override fun onClick(view: View?) {
         when (view) {
             updateDataImageView ->
                 if (CommonObject.isCityChosen)
                     WeatherPresenter().execute(
                         CommonObject.apiRequestCurrentWeatherByCityName(
-                            CommonObject.cityName.toString()
+                            CommonObject.chosenCityName.toString()
                         )
                     )
             changeCityTextView -> {

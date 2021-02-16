@@ -1,4 +1,4 @@
-package com.example.weatherappbyssm.Common
+package com.example.weatherappbyssm.common
 
 import android.content.ContentValues
 import android.content.Context
@@ -40,7 +40,7 @@ class DBHelper(private val context: Context) :
      */
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(CREATE_CITIES_TABLE)
-        addCitiesListToDB(db)
+        addDefaultCitiesListToDB(db)
     }
 
     /**
@@ -54,7 +54,7 @@ class DBHelper(private val context: Context) :
     /**
      * Запись в БД списка городов по умолчанию
      */
-    private fun addCitiesListToDB(db: SQLiteDatabase?) {
+    private fun addDefaultCitiesListToDB(db: SQLiteDatabase?) {
         values = ContentValues()
         citiesMutableList = context.resources.getStringArray(R.array.addedCities).toMutableList()
 

@@ -1,4 +1,4 @@
-package com.example.weatherappbyssm.Model
+package com.example.weatherappbyssm.models
 
 class Clouds(val all: Int)
 

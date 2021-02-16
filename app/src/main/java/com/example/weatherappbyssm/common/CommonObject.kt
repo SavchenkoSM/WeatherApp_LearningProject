@@ -1,12 +1,13 @@
-package com.example.weatherappbyssm.Common
+package com.example.weatherappbyssm.common
 
-import com.example.weatherappbyssm.Common.Constants.API_KEY
-import com.example.weatherappbyssm.Common.Constants.API_URL
+import com.example.weatherappbyssm.common.Constants.API_KEY
+import com.example.weatherappbyssm.common.Constants.API_URL
 import java.text.SimpleDateFormat
 import java.util.*
 
 object CommonObject {
 
+    // Вывод текущей даты по формату dd/MM/yyyy HH:mm
     val currentDate: String
         get() {
             val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm")
@@ -16,39 +17,49 @@ object CommonObject {
         }
 
     var newCityName: String? = ""
-    var cityName: String? = ""
+    var chosenCityName: String? = ""
     var isCityChosen = false
 
-    /**Запрос к OpenWeatherApi по координатам (получение данных о текущей погоде)*/
+    /**
+     * Запрос к OpenWeatherApi по координатам (получение данных о текущей погоде)
+     */
     fun apiRequestCurrentWeatherByCoordinates(lat: Double?, lng: Double?): String {
-        var stringBuilder = StringBuilder(API_URL)
+        val stringBuilder = StringBuilder(API_URL)
         stringBuilder.append("weather?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric")
 
         return stringBuilder.toString()
     }
 
-    /**Запрос к OpenWeatherApi по координатам (получение 5-дневного прогноза погоды)*/
+    /**
+     * Запрос к OpenWeatherApi по координатам (получение 5-дневного прогноза погоды)
+     */
     fun apiRequestWeatherForecastByCoordinates(lat: String, lng: String): String {
-        var stringBuilder = StringBuilder(API_URL)
+        val stringBuilder = StringBuilder(API_URL)
         stringBuilder.append("forecast?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric")
 
         return stringBuilder.toString()
     }
 
-    /**Запрос к OpenWeatherApi по названию города (получение данных о текущей погоде)*/
+    /**
+     * Запрос к OpenWeatherApi по названию города (получение данных о текущей погоде)
+     */
     fun apiRequestCurrentWeatherByCityName(cityName: String): String {
-        var stringBuilder = StringBuilder(API_URL)
+        val stringBuilder = StringBuilder(API_URL)
         stringBuilder.append("weather?q=${cityName}&appid=${API_KEY}&units=metric")
 
         return stringBuilder.toString()
     }
 
-    /**Получение изображения для текущей погоды*/
+    /**
+     * Получение изображения для текущей погоды
+     */
     fun getWeatherImage(icon: String): String {
         return "https://openweathermap.org/img/w/${icon}.png"
     }
 
-    /**Конвертирование UnixTimeStamp в DateTime*/
+    /**
+     * Конвертирование UnixTimeStamp в DateTime
+     */
     fun unixTimeStampToDateTime(unixTimeStamp: Double): String {
         val dateFormat = SimpleDateFormat("HH:mm")
         val date = Date()
