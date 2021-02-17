@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private var isLocationPermissionGranted: Boolean = false
 
     private var openWeatherMap = Root()
-
     private var dbHelper: DBHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,11 +111,25 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
-                    Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Permissions granted",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
                     if (isGooglePlayServicesAvailable()) {
                         if (!CommonObject.isCityChosen)
                             checkLocationServicesEnabled()
                         buildGoogleApiClient()
+                    }
+                } else {
+                    CacheDataDB(this).getCacheDataFromDB()
+
+                    if (WeatherDataForDisplay.cityName != null)
+                        showWeatherDataUI()
+                    else {
+                        errorTextView.text = getString(R.string.exception)
+                        errorTextView.visibility = View.VISIBLE
                     }
                 }
         }
@@ -262,8 +275,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     override fun onLocationChanged(location: Location?) {
         WeatherPresenter().execute(
             CommonObject.apiRequestCurrentWeatherByCoordinates(
-                location!!.latitude,
-                location.longitude
+                location?.latitude,
+                location?.longitude
             )
         )
     }
@@ -276,15 +289,32 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     override fun onStart() {
         super.onStart()
 
-        if (locationClient != null)
-            locationClient!!.connect()
+        locationClient?.connect()
     }
 
     /**
      * Прекращение всех процессов и разрушение активности по окончании работы
      */
     override fun onDestroy() {
-        locationClient!!.disconnect()
+        if (WeatherDataForDisplay.cityName != null)
+            CacheDataDB(this@MainActivity).updateCacheDataInDB(
+                WeatherDataForDisplay.cityName,
+                WeatherDataForDisplay.country,
+                WeatherDataForDisplay.latitude,
+                WeatherDataForDisplay.longitude,
+                WeatherDataForDisplay.skyStatus,
+                WeatherDataForDisplay.currentTemp,
+                WeatherDataForDisplay.tempFeelsLike,
+                WeatherDataForDisplay.lastWeatherUpdateTime,
+                WeatherDataForDisplay.windSpeed,
+                WeatherDataForDisplay.pressure,
+                WeatherDataForDisplay.humindity,
+                WeatherDataForDisplay.minTemp,
+                WeatherDataForDisplay.maxTemp,
+                WeatherDataForDisplay.sunriseTime,
+                WeatherDataForDisplay.sunsetTime
+            )
+        locationClient?.disconnect()
         WeatherPresenter().cancel()
 
         super.onDestroy()
@@ -347,23 +377,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             try {
                 getWeatherDataFromJson(result)
                 rememberNewCity()
+                //Запись данных, полученных с сервера в переменные
+                openWeatherMapDataForDisplay()
                 showWeatherDataUI()
             } catch (exception: Exception) {
                 loaderProgressBar.visibility = View.GONE
                 errorTextView.text = getString(R.string.exception)
                 errorTextView.visibility = View.VISIBLE
             }
-        }
-    }
-
-
-    /**
-     * Запоминание нового города при измененении местоположения
-     */
-    private fun rememberNewCity() {
-        if (!CommonObject.isCityChosen) {
-            CommonObject.newCityName = openWeatherMap.name
-            updateDataImageView.visibility = View.INVISIBLE
         }
     }
 
@@ -375,6 +396,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         val objectsType = object : TypeToken<Root>() {}.type
 
         openWeatherMap = gson.fromJson<Root>(result, objectsType)
+    }
+
+    /**
+     * Запоминание нового города при измененении местоположения
+     */
+    private fun rememberNewCity() {
+        if (!CommonObject.isCityChosen) {
+            CommonObject.newCityName = openWeatherMap.name
+            updateDataImageView.visibility = View.INVISIBLE
+        }
     }
 
     /**
@@ -394,8 +425,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         WeatherDataForDisplay.humindity = openWeatherMap.main!!.humidity
         WeatherDataForDisplay.minTemp = openWeatherMap.main!!.temp_min
         WeatherDataForDisplay.maxTemp = openWeatherMap.main!!.temp_max
-        WeatherDataForDisplay.sunriseTime = CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
-        WeatherDataForDisplay.sunsetTime = CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
+        WeatherDataForDisplay.sunriseTime =
+            CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
+        WeatherDataForDisplay.sunsetTime =
+            CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
     }
 
     /**
@@ -403,12 +436,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      */
     private fun showWeatherDataUI() {
         // Отображение данных о погоде
-        cityNameTextView.text = "${WeatherDataForDisplay.cityName}, ${WeatherDataForDisplay.country}"
-        cityCoordinatesTextView.text = "${WeatherDataForDisplay.latitude}, ${WeatherDataForDisplay.longitude}"
+        cityNameTextView.text =
+            "${WeatherDataForDisplay.cityName}, ${WeatherDataForDisplay.country}"
+        cityCoordinatesTextView.text =
+            "${WeatherDataForDisplay.latitude}, ${WeatherDataForDisplay.longitude}"
         weatherStatusTextView.text = WeatherDataForDisplay.skyStatus
         currentTemperatureTextView.text = "${WeatherDataForDisplay.currentTemp.toInt()}°C"
         tempFeelsLikeTextView.text = "Feels like: ${WeatherDataForDisplay.tempFeelsLike.toInt()}°C"
-        lastWeatherUpdateAtTextView.text = "Updated at: ${WeatherDataForDisplay.lastWeatherUpdateTime}"
+        lastWeatherUpdateAtTextView.text =
+            "Updated at: ${WeatherDataForDisplay.lastWeatherUpdateTime}"
         windTextView.text = "${WeatherDataForDisplay.windSpeed} m/s"
         pressureTextView.text = "${WeatherDataForDisplay.pressure} hPa"
         humidityTextView.text = "${WeatherDataForDisplay.humindity} %"
@@ -418,9 +454,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         sunsetTextView.text = "Sunset at: ${WeatherDataForDisplay.sunsetTime}"
 
         // Показ соответствующих текущей погоде изображений
-        Picasso.with(this@MainActivity)
-            .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
-            .into(weatherImageView)
+        /* Picasso.with(this@MainActivity)
+             .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
+             .into(weatherImageView)*/
 
         loaderProgressBar.visibility = View.GONE
         mainContainer.visibility = View.VISIBLE

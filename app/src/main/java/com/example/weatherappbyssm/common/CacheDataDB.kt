@@ -25,15 +25,34 @@ class CacheDataDB(context: Context) : DBHelper(context) {
         private const val COLUMN_SUNSET_TIME = "sunsetTime"
 
         //Запросы к БД
-        const val CREATE_CACHE_TABLE =
-            "CREATE TABLE $CACHE_TABLE_NAME ($ID Integer PRIMARY KEY, $COLUMN_CITY_NAME TEXT, $COLUMN_COUNTRY TEXT, $COLUMN_LATITUDE REAL, $COLUMN_LONGITUDE REAL, $COLUMN_SKY_STATUS TEXT, $COLUMN_CURRENT_TEMP REAL,$COLUMN_TEMP_FEELS_LIKE REAL,$COLUMN_LAST_WEATHER_UPDATE_TIME REAL,$COLUMN_WIND_SPEED REAL,$COLUMN_PRESSURE REAL,$COLUMN_HUMINDITY REAL,$COLUMN_MIN_TEMP REAL,$COLUMN_MAX_TEMP REAL,$COLUMN_SUNRISE_TIME,$COLUMN_SUNSET_TIME)"
-        const val INSERT_DEFAULT_ROW = "INSERT INTO $CACHE_TABLE_NAME DEFAULT VALUES"
+        const val CREATE_CACHE_TABLE_QUERY =
+            "CREATE TABLE IF NOT EXISTS $CACHE_TABLE_NAME " +
+                    "($ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "$COLUMN_CITY_NAME TEXT," +
+                    "$COLUMN_COUNTRY TEXT," +
+                    "$COLUMN_LATITUDE DOUBLE," +
+                    "$COLUMN_LONGITUDE DOUBLE," +
+                    "$COLUMN_SKY_STATUS TEXT," +
+                    "$COLUMN_CURRENT_TEMP DOUBLE," +
+                    "$COLUMN_TEMP_FEELS_LIKE DOUBLE," +
+                    "$COLUMN_LAST_WEATHER_UPDATE_TIME TEXT," +
+                    "$COLUMN_WIND_SPEED DOUBLE," +
+                    "$COLUMN_PRESSURE DOUBLE," +
+                    "$COLUMN_HUMINDITY INTEGER," +
+                    "$COLUMN_MIN_TEMP DOUBLE," +
+                    "$COLUMN_MAX_TEMP DOUBLE," +
+                    "$COLUMN_SUNRISE_TIME TEXT," +
+                    "$COLUMN_SUNSET_TIME TEXT)"
+        const val INSERT_DEFAULT_ROW_QUERY = "INSERT INTO $CACHE_TABLE_NAME DEFAULT VALUES"
+        private const val SELECT_ALL_FROM_CACHE_TABLE_QUERY = "SELECT * FROM $CACHE_TABLE_NAME"
+        const val IS_ROW_NULL_QUERY = "IF $COLUMN_CITY_NAME IS NULL"
     }
+
 
     /**
      * Обновление закешированных данных
      */
-    fun updateCacheInDB(
+    fun updateCacheDataInDB(
         cityName: String?,
         country: String?,
         latitude: Double,
@@ -77,7 +96,7 @@ class CacheDataDB(context: Context) : DBHelper(context) {
      */
     fun getCacheDataFromDB() {
         db = this.readableDatabase
-        cursor = db.rawQuery(SELECT_ALL_QUERY, null)
+        cursor = db.rawQuery(SELECT_ALL_FROM_CACHE_TABLE_QUERY, null)
 
         while (cursor.moveToNext()) {
             WeatherDataForDisplay.cityName =

@@ -29,10 +29,10 @@ open class DBHelper(private val context: Context) :
 
         // Запросы к БД
         private const val CREATE_CITIES_TABLE =
-            "CREATE TABLE $TABLE_NAME ($ID Integer PRIMARY KEY, $CITY_NAME TEXT)"
+            "CREATE TABLE IF NOT EXISTS $TABLE_NAME ($ID Integer PRIMARY KEY, $CITY_NAME TEXT)"
 
         private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS $TABLE_NAME"
-        const val SELECT_ALL_QUERY = "SELECT * FROM $TABLE_NAME"
+        private const val SELECT_ALL_QUERY = "SELECT * FROM $TABLE_NAME"
     }
 
     /**
@@ -42,8 +42,8 @@ open class DBHelper(private val context: Context) :
         db?.execSQL(CREATE_CITIES_TABLE)
         addDefaultCitiesListToDB(db)
 
-        db?.execSQL(CacheDataDB.CREATE_CACHE_TABLE)
-        db?.execSQL(CacheDataDB.INSERT_DEFAULT_ROW)
+        db?.execSQL(CacheDataDB.CREATE_CACHE_TABLE_QUERY)
+        db?.execSQL(CacheDataDB.INSERT_DEFAULT_ROW_QUERY)
     }
 
     /**
