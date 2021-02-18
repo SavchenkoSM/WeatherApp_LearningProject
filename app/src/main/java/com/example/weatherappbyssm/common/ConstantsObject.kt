@@ -1,6 +1,6 @@
 package com.example.weatherappbyssm.common
 
-object Constants {
+object ConstantsObject {
     const val API_KEY = "bca7c80097ffb145abd02c64c80b8bef"
     const val API_URL = "https://api.openweathermap.org/data/2.5/"
     const val PERMISSION_REQUEST_CODE = 1001

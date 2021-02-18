@@ -3,7 +3,7 @@ package com.example.weatherappbyssm.common
 /**
  * Объект, содержащий набор данных о погоде для отображения
  */
-object WeatherDataForDisplay {
+object WeatherDataForDisplayObject {
     var cityName: String? = null
     var country: String? = null
     var latitude: Double = 0.0

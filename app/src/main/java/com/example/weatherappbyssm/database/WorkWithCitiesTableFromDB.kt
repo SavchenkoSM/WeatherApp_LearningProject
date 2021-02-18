@@ -1,4 +1,4 @@
-package com.example.weatherappbyssm.common
+package com.example.weatherappbyssm.database
 
 import android.content.ContentValues
 import android.content.Context

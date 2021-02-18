@@ -1,7 +1,8 @@
-package com.example.weatherappbyssm.common
+package com.example.weatherappbyssm.database
 
 import android.content.ContentValues
 import android.content.Context
+import com.example.weatherappbyssm.common.WeatherDataForDisplayObject
 
 /**
  * Класс для работы с таблицей закешированных данных в БД
@@ -116,31 +117,35 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
 
         cursor.moveToFirst()
 
-        WeatherDataForDisplay.cityName =
+        WeatherDataForDisplayObject.cityName =
             cursor.getString(cursor.getColumnIndex(COLUMN_CITY_NAME))
-        WeatherDataForDisplay.country = cursor.getString(cursor.getColumnIndex(COLUMN_COUNTRY))
-        WeatherDataForDisplay.latitude =
+        WeatherDataForDisplayObject.country =
+            cursor.getString(cursor.getColumnIndex(COLUMN_COUNTRY))
+        WeatherDataForDisplayObject.latitude =
             cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE))
-        WeatherDataForDisplay.longitude =
+        WeatherDataForDisplayObject.longitude =
             cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE))
-        WeatherDataForDisplay.skyStatus =
+        WeatherDataForDisplayObject.skyStatus =
             cursor.getString(cursor.getColumnIndex(COLUMN_SKY_STATUS))
-        WeatherDataForDisplay.currentTemp =
+        WeatherDataForDisplayObject.currentTemp =
             cursor.getDouble(cursor.getColumnIndex(COLUMN_CURRENT_TEMP))
-        WeatherDataForDisplay.tempFeelsLike =
+        WeatherDataForDisplayObject.tempFeelsLike =
             cursor.getDouble(cursor.getColumnIndex(COLUMN_TEMP_FEELS_LIKE))
-        WeatherDataForDisplay.lastWeatherUpdateTime =
+        WeatherDataForDisplayObject.lastWeatherUpdateTime =
             cursor.getString(cursor.getColumnIndex(COLUMN_LAST_WEATHER_UPDATE_TIME))
-        WeatherDataForDisplay.windSpeed =
+        WeatherDataForDisplayObject.windSpeed =
             cursor.getDouble(cursor.getColumnIndex(COLUMN_WIND_SPEED))
-        WeatherDataForDisplay.pressure =
+        WeatherDataForDisplayObject.pressure =
             cursor.getDouble(cursor.getColumnIndex(COLUMN_PRESSURE))
-        WeatherDataForDisplay.humidity = cursor.getInt(cursor.getColumnIndex(COLUMN_HUMIDITY))
-        WeatherDataForDisplay.minTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MIN_TEMP))
-        WeatherDataForDisplay.maxTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MAX_TEMP))
-        WeatherDataForDisplay.sunriseTime =
+        WeatherDataForDisplayObject.humidity =
+            cursor.getInt(cursor.getColumnIndex(COLUMN_HUMIDITY))
+        WeatherDataForDisplayObject.minTemp =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_MIN_TEMP))
+        WeatherDataForDisplayObject.maxTemp =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_MAX_TEMP))
+        WeatherDataForDisplayObject.sunriseTime =
             cursor.getString(cursor.getColumnIndex(COLUMN_SUNRISE_TIME))
-        WeatherDataForDisplay.sunsetTime =
+        WeatherDataForDisplayObject.sunsetTime =
             cursor.getString(cursor.getColumnIndex(COLUMN_SUNSET_TIME))
 
         cursor.close()

@@ -16,8 +16,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weatherappbyssm.R
 import com.example.weatherappbyssm.common.*
-import com.example.weatherappbyssm.common.Constants.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
-import com.example.weatherappbyssm.common.Constants.PERMISSION_REQUEST_CODE
+import com.example.weatherappbyssm.common.ConstantsObject.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
+import com.example.weatherappbyssm.common.ConstantsObject.PERMISSION_REQUEST_CODE
+import com.example.weatherappbyssm.database.DBHelper
+import com.example.weatherappbyssm.database.WorkWithCacheTableFromDB
+import com.example.weatherappbyssm.http.OkHttpHelper
 import com.example.weatherappbyssm.models.Root
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -32,7 +35,6 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.io.IOException
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -136,7 +138,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         if (!WorkWithCacheTableFromDB(this).isCacheTableHasEmptyRow())
             WorkWithCacheTableFromDB(this).getCacheDataFromDB()
 
-        if (!WeatherDataForDisplay.cityName.isNullOrEmpty())
+        if (!WeatherDataForDisplayObject.cityName.isNullOrEmpty())
             showWeatherDataUI()
         else {
             errorTextView.text = getString(R.string.exception)
@@ -333,23 +335,25 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         // Запись данных о погоде для последнего отображенного города, если таковые имеются
         // и остановка работы Coroutine при закрытии окна
         fun cancel() {
-            if (WeatherDataForDisplay.cityName != null)
-                WorkWithCacheTableFromDB(this@MainActivity).updateCacheDataInDB(
-                    WeatherDataForDisplay.cityName,
-                    WeatherDataForDisplay.country,
-                    WeatherDataForDisplay.latitude,
-                    WeatherDataForDisplay.longitude,
-                    WeatherDataForDisplay.skyStatus,
-                    WeatherDataForDisplay.currentTemp,
-                    WeatherDataForDisplay.tempFeelsLike,
-                    WeatherDataForDisplay.lastWeatherUpdateTime,
-                    WeatherDataForDisplay.windSpeed,
-                    WeatherDataForDisplay.pressure,
-                    WeatherDataForDisplay.humidity,
-                    WeatherDataForDisplay.minTemp,
-                    WeatherDataForDisplay.maxTemp,
-                    WeatherDataForDisplay.sunriseTime,
-                    WeatherDataForDisplay.sunsetTime
+            if (WeatherDataForDisplayObject.cityName != null)
+                WorkWithCacheTableFromDB(
+                    this@MainActivity
+                ).updateCacheDataInDB(
+                    WeatherDataForDisplayObject.cityName,
+                    WeatherDataForDisplayObject.country,
+                    WeatherDataForDisplayObject.latitude,
+                    WeatherDataForDisplayObject.longitude,
+                    WeatherDataForDisplayObject.skyStatus,
+                    WeatherDataForDisplayObject.currentTemp,
+                    WeatherDataForDisplayObject.tempFeelsLike,
+                    WeatherDataForDisplayObject.lastWeatherUpdateTime,
+                    WeatherDataForDisplayObject.windSpeed,
+                    WeatherDataForDisplayObject.pressure,
+                    WeatherDataForDisplayObject.humidity,
+                    WeatherDataForDisplayObject.minTemp,
+                    WeatherDataForDisplayObject.maxTemp,
+                    WeatherDataForDisplayObject.sunriseTime,
+                    WeatherDataForDisplayObject.sunsetTime
                 )
             job.cancel()
         }
@@ -392,7 +396,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 showWeatherImage()
             } catch (exception: Exception) {
                 loaderProgressBar.visibility = View.GONE
-                if (WeatherDataForDisplay.cityName != null) {
+                if (WeatherDataForDisplayObject.cityName != null) {
                     errorTextView.text = getString(R.string.exception)
                     errorTextView.visibility = View.VISIBLE
                 }
@@ -424,22 +428,22 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      * Запись набора данных с сервера API OpenWeatherMap для отображения
      */
     private fun openWeatherMapDataForDisplay() {
-        WeatherDataForDisplay.cityName = openWeatherMap.name
-        WeatherDataForDisplay.country = openWeatherMap.sys!!.country
-        WeatherDataForDisplay.latitude = openWeatherMap.coord!!.lat
-        WeatherDataForDisplay.longitude = openWeatherMap.coord!!.lon
-        WeatherDataForDisplay.skyStatus = openWeatherMap.weather!![0].description
-        WeatherDataForDisplay.currentTemp = openWeatherMap.main!!.temp
-        WeatherDataForDisplay.tempFeelsLike = openWeatherMap.main!!.feels_like
-        WeatherDataForDisplay.lastWeatherUpdateTime = CommonObject.currentDate
-        WeatherDataForDisplay.windSpeed = openWeatherMap.wind!!.speed
-        WeatherDataForDisplay.pressure = openWeatherMap.main!!.pressure
-        WeatherDataForDisplay.humidity = openWeatherMap.main!!.humidity
-        WeatherDataForDisplay.minTemp = openWeatherMap.main!!.temp_min
-        WeatherDataForDisplay.maxTemp = openWeatherMap.main!!.temp_max
-        WeatherDataForDisplay.sunriseTime =
+        WeatherDataForDisplayObject.cityName = openWeatherMap.name
+        WeatherDataForDisplayObject.country = openWeatherMap.sys!!.country
+        WeatherDataForDisplayObject.latitude = openWeatherMap.coord!!.lat
+        WeatherDataForDisplayObject.longitude = openWeatherMap.coord!!.lon
+        WeatherDataForDisplayObject.skyStatus = openWeatherMap.weather!![0].description
+        WeatherDataForDisplayObject.currentTemp = openWeatherMap.main!!.temp
+        WeatherDataForDisplayObject.tempFeelsLike = openWeatherMap.main!!.feels_like
+        WeatherDataForDisplayObject.lastWeatherUpdateTime = CommonObject.currentDate
+        WeatherDataForDisplayObject.windSpeed = openWeatherMap.wind!!.speed
+        WeatherDataForDisplayObject.pressure = openWeatherMap.main!!.pressure
+        WeatherDataForDisplayObject.humidity = openWeatherMap.main!!.humidity
+        WeatherDataForDisplayObject.minTemp = openWeatherMap.main!!.temp_min
+        WeatherDataForDisplayObject.maxTemp = openWeatherMap.main!!.temp_max
+        WeatherDataForDisplayObject.sunriseTime =
             CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunrise)
-        WeatherDataForDisplay.sunsetTime =
+        WeatherDataForDisplayObject.sunsetTime =
             CommonObject.unixTimeStampToDateTime(openWeatherMap.sys!!.sunset)
     }
 
@@ -448,21 +452,21 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      */
     private fun showWeatherDataUI() {
         cityNameTextView.text =
-            "${WeatherDataForDisplay.cityName}, ${WeatherDataForDisplay.country}"
+            "${WeatherDataForDisplayObject.cityName}, ${WeatherDataForDisplayObject.country}"
         cityCoordinatesTextView.text =
-            "${WeatherDataForDisplay.latitude}, ${WeatherDataForDisplay.longitude}"
-        weatherStatusTextView.text = WeatherDataForDisplay.skyStatus
-        currentTemperatureTextView.text = "${WeatherDataForDisplay.currentTemp.toInt()}°C"
-        tempFeelsLikeTextView.text = "Feels like: ${WeatherDataForDisplay.tempFeelsLike.toInt()}°C"
+            "${WeatherDataForDisplayObject.latitude}, ${WeatherDataForDisplayObject.longitude}"
+        weatherStatusTextView.text = WeatherDataForDisplayObject.skyStatus
+        currentTemperatureTextView.text = "${WeatherDataForDisplayObject.currentTemp.toInt()}°C"
+        tempFeelsLikeTextView.text = "Feels like: ${WeatherDataForDisplayObject.tempFeelsLike.toInt()}°C"
         lastWeatherUpdateAtTextView.text =
-            "Updated at: ${WeatherDataForDisplay.lastWeatherUpdateTime}"
-        windTextView.text = "${WeatherDataForDisplay.windSpeed} m/s"
-        pressureTextView.text = "${WeatherDataForDisplay.pressure} hPa"
-        humidityTextView.text = "${WeatherDataForDisplay.humidity} %"
-        minTempTextView.text = "Min temp: ${WeatherDataForDisplay.minTemp}°C"
-        maxTempTextView.text = "Max temp: ${WeatherDataForDisplay.maxTemp}°C"
-        sunriseTextView.text = "Sunrise at: ${WeatherDataForDisplay.sunriseTime}"
-        sunsetTextView.text = "Sunset at: ${WeatherDataForDisplay.sunsetTime}"
+            "Updated at: ${WeatherDataForDisplayObject.lastWeatherUpdateTime}"
+        windTextView.text = "${WeatherDataForDisplayObject.windSpeed} m/s"
+        pressureTextView.text = "${WeatherDataForDisplayObject.pressure} hPa"
+        humidityTextView.text = "${WeatherDataForDisplayObject.humidity} %"
+        minTempTextView.text = "Min temp: ${WeatherDataForDisplayObject.minTemp}°C"
+        maxTempTextView.text = "Max temp: ${WeatherDataForDisplayObject.maxTemp}°C"
+        sunriseTextView.text = "Sunrise at: ${WeatherDataForDisplayObject.sunriseTime}"
+        sunsetTextView.text = "Sunset at: ${WeatherDataForDisplayObject.sunsetTime}"
 
         loaderProgressBar.visibility = View.GONE
         mainContainer.visibility = View.VISIBLE

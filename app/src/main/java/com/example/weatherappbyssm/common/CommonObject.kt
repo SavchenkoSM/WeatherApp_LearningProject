@@ -1,7 +1,7 @@
 package com.example.weatherappbyssm.common
 
-import com.example.weatherappbyssm.common.Constants.API_KEY
-import com.example.weatherappbyssm.common.Constants.API_URL
+import com.example.weatherappbyssm.common.ConstantsObject.API_KEY
+import com.example.weatherappbyssm.common.ConstantsObject.API_URL
 import java.text.SimpleDateFormat
 import java.util.*
 

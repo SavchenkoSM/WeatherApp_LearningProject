@@ -8,8 +8,8 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherappbyssm.R
 import com.example.weatherappbyssm.common.CommonObject
-import com.example.weatherappbyssm.common.DBHelper
-import com.example.weatherappbyssm.common.WorkWithCitiesTableFromDB
+import com.example.weatherappbyssm.database.DBHelper
+import com.example.weatherappbyssm.database.WorkWithCitiesTableFromDB
 import kotlinx.android.synthetic.main.added_cities_activity.*
 
 /**
