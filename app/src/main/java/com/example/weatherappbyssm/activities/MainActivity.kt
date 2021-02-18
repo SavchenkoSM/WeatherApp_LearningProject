@@ -35,6 +35,9 @@ import java.io.IOException
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * Класс основной активности, отображающей погоду для текущего/выбранного города
+ */
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, LocationListener, View.OnClickListener {
 
@@ -43,7 +46,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private var locationManager: LocationManager? = null
 
     private var isGpsEnabled: Boolean = false
-    private var isLocationPermissionGranted: Boolean = false
+    private var isLocationPermissionsGranted: Boolean = false
 
     private var openWeatherMap = Root()
     private var dbHelper: DBHelper? = null
@@ -54,11 +57,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         dbHelper = DBHelper(this)
 
-        requestLocationPermissions()
+        if (!CommonObject.isCityChosen)
+            requestLocationPermissions()
 
-        if (isLocationPermissionGranted
-            && isGooglePlayServicesAvailable()
-        ) {
+        if (isLocationPermissionsGranted && isGooglePlayServicesAvailable()) {
             if (!CommonObject.isCityChosen)
                 checkLocationServicesEnabled()
             buildGoogleApiClient()
@@ -95,7 +97,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 PERMISSION_REQUEST_CODE
             )
         else
-            isLocationPermissionGranted = true
+            isLocationPermissionsGranted = true
     }
 
     /**
@@ -104,34 +106,41 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+        grantResults: IntArray) {
+
         when (requestCode) {
             PERMISSION_REQUEST_CODE ->
                 if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED
-                ) {
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
                     Toast.makeText(
                         this,
                         "Permissions granted",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                        Toast.LENGTH_SHORT).show()
 
                     if (isGooglePlayServicesAvailable()) {
                         if (!CommonObject.isCityChosen)
                             checkLocationServicesEnabled()
                         buildGoogleApiClient()
                     }
-                } else {
-                    CacheDataDB(this).getCacheDataFromDB()
 
-                    if (WeatherDataForDisplay.cityName != null)
-                        showWeatherDataUI()
-                    else {
-                        errorTextView.text = getString(R.string.exception)
-                        errorTextView.visibility = View.VISIBLE
-                    }
-                }
+                } else
+                    showCacheDataIfExist()
+        }
+    }
+
+    /**
+     * Вывод закешированных данных, если таковые имеются
+     */
+    private fun showCacheDataIfExist() {
+        if (!WorkWithCacheTableFromDB(this).isCacheTableHasEmptyColumns())
+            WorkWithCacheTableFromDB(this).getCacheDataFromDB()
+
+        if (!WeatherDataForDisplay.cityName.isNullOrEmpty())
+            showWeatherDataUI()
+        else {
+            errorTextView.text = getString(R.string.exception)
+            errorTextView.visibility = View.VISIBLE
         }
     }
 
@@ -213,7 +222,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             .addApi(LocationServices.API)
             .build()
 
-        locationClient!!.connect()
+        locationClient?.connect()
     }
 
 
@@ -233,7 +242,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     override fun onConnectionSuspended(cause: Int) {
         Log.i("CONNECTION", "Connection suspended")
 
-        locationClient!!.connect()
+        locationClient?.connect()
     }
 
     /**
@@ -249,7 +258,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      */
     private fun locationRequest() {
         locationRequest = LocationRequest()
-        locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         //Проверка разрешений на определения местополжения
         if (ActivityCompat.checkSelfPermission(
@@ -296,24 +305,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      * Прекращение всех процессов и разрушение активности по окончании работы
      */
     override fun onDestroy() {
-        if (WeatherDataForDisplay.cityName != null)
-            CacheDataDB(this@MainActivity).updateCacheDataInDB(
-                WeatherDataForDisplay.cityName,
-                WeatherDataForDisplay.country,
-                WeatherDataForDisplay.latitude,
-                WeatherDataForDisplay.longitude,
-                WeatherDataForDisplay.skyStatus,
-                WeatherDataForDisplay.currentTemp,
-                WeatherDataForDisplay.tempFeelsLike,
-                WeatherDataForDisplay.lastWeatherUpdateTime,
-                WeatherDataForDisplay.windSpeed,
-                WeatherDataForDisplay.pressure,
-                WeatherDataForDisplay.humindity,
-                WeatherDataForDisplay.minTemp,
-                WeatherDataForDisplay.maxTemp,
-                WeatherDataForDisplay.sunriseTime,
-                WeatherDataForDisplay.sunsetTime
-            )
         locationClient?.disconnect()
         WeatherPresenter().cancel()
 
@@ -339,8 +330,27 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         override val coroutineContext: CoroutineContext
             get() = Dispatchers.Main + job // Для выполнения в основном потоке
 
-        // Остановка работы Coroutine, когда пользователь закрывает окно
+        // Запись данных о погоде для последнего отображенного города, если таковые имеются
+        // и остановка работы Coroutine при закрытии окна
         fun cancel() {
+            if (WeatherDataForDisplay.cityName != null)
+                WorkWithCacheTableFromDB(this@MainActivity).updateCacheDataInDB(
+                    WeatherDataForDisplay.cityName,
+                    WeatherDataForDisplay.country,
+                    WeatherDataForDisplay.latitude,
+                    WeatherDataForDisplay.longitude,
+                    WeatherDataForDisplay.skyStatus,
+                    WeatherDataForDisplay.currentTemp,
+                    WeatherDataForDisplay.tempFeelsLike,
+                    WeatherDataForDisplay.lastWeatherUpdateTime,
+                    WeatherDataForDisplay.windSpeed,
+                    WeatherDataForDisplay.pressure,
+                    WeatherDataForDisplay.humidity,
+                    WeatherDataForDisplay.minTemp,
+                    WeatherDataForDisplay.maxTemp,
+                    WeatherDataForDisplay.sunriseTime,
+                    WeatherDataForDisplay.sunsetTime
+                )
             job.cancel()
         }
 
@@ -377,13 +387,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             try {
                 getWeatherDataFromJson(result)
                 rememberNewCity()
-                //Запись данных, полученных с сервера в переменные
                 openWeatherMapDataForDisplay()
                 showWeatherDataUI()
+                showWeatherImage()
             } catch (exception: Exception) {
                 loaderProgressBar.visibility = View.GONE
-                errorTextView.text = getString(R.string.exception)
-                errorTextView.visibility = View.VISIBLE
+                if (WeatherDataForDisplay.cityName != null) {
+                    errorTextView.text = getString(R.string.exception)
+                    errorTextView.visibility = View.VISIBLE
+                }
             }
         }
     }
@@ -422,7 +434,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         WeatherDataForDisplay.lastWeatherUpdateTime = CommonObject.currentDate
         WeatherDataForDisplay.windSpeed = openWeatherMap.wind!!.speed
         WeatherDataForDisplay.pressure = openWeatherMap.main!!.pressure
-        WeatherDataForDisplay.humindity = openWeatherMap.main!!.humidity
+        WeatherDataForDisplay.humidity = openWeatherMap.main!!.humidity
         WeatherDataForDisplay.minTemp = openWeatherMap.main!!.temp_min
         WeatherDataForDisplay.maxTemp = openWeatherMap.main!!.temp_max
         WeatherDataForDisplay.sunriseTime =
@@ -435,7 +447,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      * Отображение данных о погоде
      */
     private fun showWeatherDataUI() {
-        // Отображение данных о погоде
         cityNameTextView.text =
             "${WeatherDataForDisplay.cityName}, ${WeatherDataForDisplay.country}"
         cityCoordinatesTextView.text =
@@ -447,19 +458,23 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             "Updated at: ${WeatherDataForDisplay.lastWeatherUpdateTime}"
         windTextView.text = "${WeatherDataForDisplay.windSpeed} m/s"
         pressureTextView.text = "${WeatherDataForDisplay.pressure} hPa"
-        humidityTextView.text = "${WeatherDataForDisplay.humindity} %"
+        humidityTextView.text = "${WeatherDataForDisplay.humidity} %"
         minTempTextView.text = "Min temp: ${WeatherDataForDisplay.minTemp}°C"
         maxTempTextView.text = "Max temp: ${WeatherDataForDisplay.maxTemp}°C"
         sunriseTextView.text = "Sunrise at: ${WeatherDataForDisplay.sunriseTime}"
         sunsetTextView.text = "Sunset at: ${WeatherDataForDisplay.sunsetTime}"
 
-        // Показ соответствующих текущей погоде изображений
-        /* Picasso.with(this@MainActivity)
-             .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
-             .into(weatherImageView)*/
-
         loaderProgressBar.visibility = View.GONE
         mainContainer.visibility = View.VISIBLE
+    }
+
+    /**
+     * Отображение картинок, соответствующих текущей погоде
+     */
+    fun showWeatherImage() {
+        Picasso.with(this@MainActivity)
+            .load(CommonObject.getWeatherImage(openWeatherMap.weather!![0].icon!!))
+            .into(weatherImageView)
     }
 
     /**
@@ -475,7 +490,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                         )
                     )
             changeCityTextView -> {
-                startActivity(Intent(this, AddedCitiesActivity::class.java))
+                val mainActivityIntent = Intent(this, AddedCitiesActivity::class.java)
+                mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+                startActivity(mainActivityIntent)
             }
         }
     }

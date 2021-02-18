@@ -3,10 +3,13 @@ package com.example.weatherappbyssm.common
 import android.content.ContentValues
 import android.content.Context
 
-class CacheDataDB(context: Context) : DBHelper(context) {
+/**
+ * Класс для работы с таблицей закешированных данных в БД
+ */
+class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
 
     companion object {
-        //Описание структуры таблицы
+        // Описание структуры таблицы
         private const val CACHE_TABLE_NAME = "cacheTable"
         private const val COLUMN_CITY_NAME = "cityName"
         private const val COLUMN_COUNTRY = "country"
@@ -18,13 +21,13 @@ class CacheDataDB(context: Context) : DBHelper(context) {
         private const val COLUMN_LAST_WEATHER_UPDATE_TIME = "lastWeatherUpdateTime"
         private const val COLUMN_WIND_SPEED = "windSpeed"
         private const val COLUMN_PRESSURE = "pressure"
-        private const val COLUMN_HUMINDITY = "humindity"
+        private const val COLUMN_HUMIDITY = "humidity"
         private const val COLUMN_MIN_TEMP = "minTemp"
         private const val COLUMN_MAX_TEMP = "maxTemp"
         private const val COLUMN_SUNRISE_TIME = "sunriseTime"
         private const val COLUMN_SUNSET_TIME = "sunsetTime"
 
-        //Запросы к БД
+        // Запросы к БД
         const val CREATE_CACHE_TABLE_QUERY =
             "CREATE TABLE IF NOT EXISTS $CACHE_TABLE_NAME " +
                     "($ID INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -38,16 +41,25 @@ class CacheDataDB(context: Context) : DBHelper(context) {
                     "$COLUMN_LAST_WEATHER_UPDATE_TIME TEXT," +
                     "$COLUMN_WIND_SPEED DOUBLE," +
                     "$COLUMN_PRESSURE DOUBLE," +
-                    "$COLUMN_HUMINDITY INTEGER," +
+                    "$COLUMN_HUMIDITY INTEGER," +
                     "$COLUMN_MIN_TEMP DOUBLE," +
                     "$COLUMN_MAX_TEMP DOUBLE," +
                     "$COLUMN_SUNRISE_TIME TEXT," +
                     "$COLUMN_SUNSET_TIME TEXT)"
-        const val INSERT_DEFAULT_ROW_QUERY = "INSERT INTO $CACHE_TABLE_NAME DEFAULT VALUES"
+        const val INSERT_DEFAULT_ROW_TO_CACHE_TABLE_QUERY = "INSERT INTO $CACHE_TABLE_NAME DEFAULT VALUES"
         private const val SELECT_ALL_FROM_CACHE_TABLE_QUERY = "SELECT * FROM $CACHE_TABLE_NAME"
-        const val IS_ROW_NULL_QUERY = "IF $COLUMN_CITY_NAME IS NULL"
     }
 
+    /**
+     * Проверка на содержание в таблице пустых ячеек.
+     * Выполняется по одному полю (первому), если оно пустое, то все остальные поля - пустые.
+     */
+    fun isCacheTableHasEmptyColumns() : Boolean {
+        db = this.readableDatabase
+        cursor = db.rawQuery(SELECT_ALL_FROM_CACHE_TABLE_QUERY, null)
+
+        return (cursor.moveToNext() && cursor.getString(cursor.getColumnIndex(COLUMN_CITY_NAME)).isNullOrEmpty())
+    }
 
     /**
      * Обновление закешированных данных
@@ -63,7 +75,7 @@ class CacheDataDB(context: Context) : DBHelper(context) {
         lastWeatherUpdateTime: String,
         windSpeed: Double,
         pressure: Double,
-        humindity: Int,
+        humidity: Int,
         minTemp: Double,
         maxTemp: Double,
         sunriseTime: String,
@@ -82,7 +94,7 @@ class CacheDataDB(context: Context) : DBHelper(context) {
         values.put(COLUMN_LAST_WEATHER_UPDATE_TIME, lastWeatherUpdateTime)
         values.put(COLUMN_WIND_SPEED, windSpeed)
         values.put(COLUMN_PRESSURE, pressure)
-        values.put(COLUMN_HUMINDITY, humindity)
+        values.put(COLUMN_HUMIDITY, humidity)
         values.put(COLUMN_MIN_TEMP, minTemp)
         values.put(COLUMN_MAX_TEMP, maxTemp)
         values.put(COLUMN_SUNRISE_TIME, sunriseTime)
@@ -118,7 +130,7 @@ class CacheDataDB(context: Context) : DBHelper(context) {
                 cursor.getDouble(cursor.getColumnIndex(COLUMN_WIND_SPEED))
             WeatherDataForDisplay.pressure =
                 cursor.getDouble(cursor.getColumnIndex(COLUMN_PRESSURE))
-            WeatherDataForDisplay.humindity = cursor.getInt(cursor.getColumnIndex(COLUMN_HUMINDITY))
+            WeatherDataForDisplay.humidity = cursor.getInt(cursor.getColumnIndex(COLUMN_HUMIDITY))
             WeatherDataForDisplay.minTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MIN_TEMP))
             WeatherDataForDisplay.maxTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MAX_TEMP))
             WeatherDataForDisplay.sunriseTime =

@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.widget.Toast
 import com.example.weatherappbyssm.R
 
+/**
+ * Класс для работы с БД
+ */
 open class DBHelper(private val context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
@@ -42,8 +45,8 @@ open class DBHelper(private val context: Context) :
         db?.execSQL(CREATE_CITIES_TABLE)
         addDefaultCitiesListToDB(db)
 
-        db?.execSQL(CacheDataDB.CREATE_CACHE_TABLE_QUERY)
-        db?.execSQL(CacheDataDB.INSERT_DEFAULT_ROW_QUERY)
+        db?.execSQL(WorkWithCacheTableFromDB.CREATE_CACHE_TABLE_QUERY)
+        db?.execSQL(WorkWithCacheTableFromDB.INSERT_DEFAULT_ROW_TO_CACHE_TABLE_QUERY)
     }
 
     /**

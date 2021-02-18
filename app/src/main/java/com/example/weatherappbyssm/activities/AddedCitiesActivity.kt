@@ -11,6 +11,9 @@ import com.example.weatherappbyssm.common.CommonObject
 import com.example.weatherappbyssm.common.DBHelper
 import kotlinx.android.synthetic.main.added_cities_activity.*
 
+/**
+ * Класс активности для выбора города из списка
+ */
 class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
     private var dbHelper: DBHelper? = null
@@ -50,7 +53,8 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         CommonObject.chosenCityName = chosenCityName
 
         // Переход на главную активность (отображающую погоду для выбранного города)
-        this.startActivity(Intent(this, MainActivity::class.java))
-        finish()
+        val addedCitiesActivityIntent = Intent(this, MainActivity::class.java)
+        addedCitiesActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(addedCitiesActivityIntent)
     }
 }
