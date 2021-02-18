@@ -10,7 +10,8 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
 
     companion object {
         // Описание структуры таблицы
-        private const val CACHE_TABLE_NAME = "cacheTable"
+        const val CACHE_TABLE_NAME = "cacheTable"
+        private const val COLUMN_ID = "_id"
         private const val COLUMN_CITY_NAME = "cityName"
         private const val COLUMN_COUNTRY = "country"
         private const val COLUMN_LATITUDE = "latitude"
@@ -30,7 +31,7 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
         // Запросы к БД
         const val CREATE_CACHE_TABLE_QUERY =
             "CREATE TABLE IF NOT EXISTS $CACHE_TABLE_NAME " +
-                    "($ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "($COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "$COLUMN_CITY_NAME TEXT," +
                     "$COLUMN_COUNTRY TEXT," +
                     "$COLUMN_LATITUDE DOUBLE," +
@@ -46,19 +47,22 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
                     "$COLUMN_MAX_TEMP DOUBLE," +
                     "$COLUMN_SUNRISE_TIME TEXT," +
                     "$COLUMN_SUNSET_TIME TEXT)"
-        const val INSERT_DEFAULT_ROW_TO_CACHE_TABLE_QUERY = "INSERT INTO $CACHE_TABLE_NAME DEFAULT VALUES"
-        private const val SELECT_ALL_FROM_CACHE_TABLE_QUERY = "SELECT * FROM $CACHE_TABLE_NAME"
+        const val INSERT_DEFAULT_ROW_TO_CACHE_TABLE_QUERY =
+            "INSERT INTO $CACHE_TABLE_NAME DEFAULT VALUES"
+        private const val SELECT_ALL_FROM_CACHE_TABLE_QUERY =
+            "SELECT * FROM $CACHE_TABLE_NAME WHERE $COLUMN_ID = 1"
     }
 
     /**
      * Проверка на содержание в таблице пустых ячеек.
      * Выполняется по одному полю (первому), если оно пустое, то все остальные поля - пустые.
      */
-    fun isCacheTableHasEmptyColumns() : Boolean {
+    fun isCacheTableHasEmptyRow() : Boolean {
         db = this.readableDatabase
         cursor = db.rawQuery(SELECT_ALL_FROM_CACHE_TABLE_QUERY, null)
 
-        return (cursor.moveToNext() && cursor.getString(cursor.getColumnIndex(COLUMN_CITY_NAME)).isNullOrEmpty())
+        return (cursor.moveToFirst() &&
+                cursor.getString(cursor.getColumnIndex(COLUMN_CITY_NAME)).isNullOrEmpty())
     }
 
     /**
@@ -100,7 +104,7 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
         values.put(COLUMN_SUNRISE_TIME, sunriseTime)
         values.put(COLUMN_SUNSET_TIME, sunsetTime)
 
-        db.update(CACHE_TABLE_NAME, values, "$ID=1", arrayOf())
+        db.update(CACHE_TABLE_NAME, values, "$COLUMN_ID=1", arrayOf())
     }
 
     /**
@@ -110,34 +114,35 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
         db = this.readableDatabase
         cursor = db.rawQuery(SELECT_ALL_FROM_CACHE_TABLE_QUERY, null)
 
-        while (cursor.moveToNext()) {
-            WeatherDataForDisplay.cityName =
-                cursor.getString(cursor.getColumnIndex(COLUMN_CITY_NAME))
-            WeatherDataForDisplay.country = cursor.getString(cursor.getColumnIndex(COLUMN_COUNTRY))
-            WeatherDataForDisplay.latitude =
-                cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE))
-            WeatherDataForDisplay.longitude =
-                cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE))
-            WeatherDataForDisplay.skyStatus =
-                cursor.getString(cursor.getColumnIndex(COLUMN_SKY_STATUS))
-            WeatherDataForDisplay.currentTemp =
-                cursor.getDouble(cursor.getColumnIndex(COLUMN_CURRENT_TEMP))
-            WeatherDataForDisplay.tempFeelsLike =
-                cursor.getDouble(cursor.getColumnIndex(COLUMN_TEMP_FEELS_LIKE))
-            WeatherDataForDisplay.lastWeatherUpdateTime =
-                cursor.getString(cursor.getColumnIndex(COLUMN_LAST_WEATHER_UPDATE_TIME))
-            WeatherDataForDisplay.windSpeed =
-                cursor.getDouble(cursor.getColumnIndex(COLUMN_WIND_SPEED))
-            WeatherDataForDisplay.pressure =
-                cursor.getDouble(cursor.getColumnIndex(COLUMN_PRESSURE))
-            WeatherDataForDisplay.humidity = cursor.getInt(cursor.getColumnIndex(COLUMN_HUMIDITY))
-            WeatherDataForDisplay.minTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MIN_TEMP))
-            WeatherDataForDisplay.maxTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MAX_TEMP))
-            WeatherDataForDisplay.sunriseTime =
-                cursor.getString(cursor.getColumnIndex(COLUMN_SUNRISE_TIME))
-            WeatherDataForDisplay.sunsetTime =
-                cursor.getString(cursor.getColumnIndex(COLUMN_SUNSET_TIME))
-        }
+        cursor.moveToFirst()
+
+        WeatherDataForDisplay.cityName =
+            cursor.getString(cursor.getColumnIndex(COLUMN_CITY_NAME))
+        WeatherDataForDisplay.country = cursor.getString(cursor.getColumnIndex(COLUMN_COUNTRY))
+        WeatherDataForDisplay.latitude =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE))
+        WeatherDataForDisplay.longitude =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE))
+        WeatherDataForDisplay.skyStatus =
+            cursor.getString(cursor.getColumnIndex(COLUMN_SKY_STATUS))
+        WeatherDataForDisplay.currentTemp =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_CURRENT_TEMP))
+        WeatherDataForDisplay.tempFeelsLike =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_TEMP_FEELS_LIKE))
+        WeatherDataForDisplay.lastWeatherUpdateTime =
+            cursor.getString(cursor.getColumnIndex(COLUMN_LAST_WEATHER_UPDATE_TIME))
+        WeatherDataForDisplay.windSpeed =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_WIND_SPEED))
+        WeatherDataForDisplay.pressure =
+            cursor.getDouble(cursor.getColumnIndex(COLUMN_PRESSURE))
+        WeatherDataForDisplay.humidity = cursor.getInt(cursor.getColumnIndex(COLUMN_HUMIDITY))
+        WeatherDataForDisplay.minTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MIN_TEMP))
+        WeatherDataForDisplay.maxTemp = cursor.getDouble(cursor.getColumnIndex(COLUMN_MAX_TEMP))
+        WeatherDataForDisplay.sunriseTime =
+            cursor.getString(cursor.getColumnIndex(COLUMN_SUNRISE_TIME))
+        WeatherDataForDisplay.sunsetTime =
+            cursor.getString(cursor.getColumnIndex(COLUMN_SUNSET_TIME))
+
         cursor.close()
         db.close()
     }

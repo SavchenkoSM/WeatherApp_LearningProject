@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      * Вывод закешированных данных, если таковые имеются
      */
     private fun showCacheDataIfExist() {
-        if (!WorkWithCacheTableFromDB(this).isCacheTableHasEmptyColumns())
+        if (!WorkWithCacheTableFromDB(this).isCacheTableHasEmptyRow())
             WorkWithCacheTableFromDB(this).getCacheDataFromDB()
 
         if (!WeatherDataForDisplay.cityName.isNullOrEmpty())

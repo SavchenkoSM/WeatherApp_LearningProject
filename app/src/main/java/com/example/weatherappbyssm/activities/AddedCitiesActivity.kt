@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherappbyssm.R
 import com.example.weatherappbyssm.common.CommonObject
 import com.example.weatherappbyssm.common.DBHelper
+import com.example.weatherappbyssm.common.WorkWithCitiesTableFromDB
 import kotlinx.android.synthetic.main.added_cities_activity.*
 
 /**
@@ -27,9 +28,9 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
         // Добавление нового города в БД, если он там отсутсвует
         if (CommonObject.newCityName != "")
-            dbHelper!!.addNewCityToDB(CommonObject.newCityName.toString())
+            WorkWithCitiesTableFromDB(this).addNewCityToDB(CommonObject.newCityName.toString())
         // Получение списка городов из БД
-        citiesMutableList = dbHelper!!.getAllCitiesFromDB()
+        citiesMutableList = WorkWithCitiesTableFromDB(this).getAllCitiesFromDB()
         // Сортировка списка городов по алфавиту
         citiesMutableList.sort()
 
