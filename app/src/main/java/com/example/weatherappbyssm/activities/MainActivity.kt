@@ -323,6 +323,34 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         isGooglePlayServicesAvailable()
     }
 
+    /**
+     * Вызывается, когда происходит свертывание активности.
+     * Сохраняет незафиксированные данные.
+     * Запись данных о погоде для последнего отображенного города, если таковые имеются
+     */
+    override fun onPause() {
+        super.onPause()
+
+        if (WeatherDataForDisplayObject.cityName != null)
+            WorkWithCacheTableFromDB(this).updateCacheDataInDB(
+                WeatherDataForDisplayObject.cityName,
+                WeatherDataForDisplayObject.country,
+                WeatherDataForDisplayObject.latitude,
+                WeatherDataForDisplayObject.longitude,
+                WeatherDataForDisplayObject.skyStatus,
+                WeatherDataForDisplayObject.currentTemp,
+                WeatherDataForDisplayObject.tempFeelsLike,
+                WeatherDataForDisplayObject.lastWeatherUpdateTime,
+                WeatherDataForDisplayObject.windSpeed,
+                WeatherDataForDisplayObject.pressure,
+                WeatherDataForDisplayObject.humidity,
+                WeatherDataForDisplayObject.minTemp,
+                WeatherDataForDisplayObject.maxTemp,
+                WeatherDataForDisplayObject.sunriseTime,
+                WeatherDataForDisplayObject.sunsetTime
+            )
+    }
+
 
     /**
      * Coroutine для работы с отображением погоды
@@ -332,29 +360,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         override val coroutineContext: CoroutineContext
             get() = Dispatchers.Main + job // Для выполнения в основном потоке
 
-        // Запись данных о погоде для последнего отображенного города, если таковые имеются
-        // и остановка работы Coroutine при закрытии окна
+        // Остановка работы Coroutine при закрытии окна
         fun cancel() {
-            if (WeatherDataForDisplayObject.cityName != null)
-                WorkWithCacheTableFromDB(
-                    this@MainActivity
-                ).updateCacheDataInDB(
-                    WeatherDataForDisplayObject.cityName,
-                    WeatherDataForDisplayObject.country,
-                    WeatherDataForDisplayObject.latitude,
-                    WeatherDataForDisplayObject.longitude,
-                    WeatherDataForDisplayObject.skyStatus,
-                    WeatherDataForDisplayObject.currentTemp,
-                    WeatherDataForDisplayObject.tempFeelsLike,
-                    WeatherDataForDisplayObject.lastWeatherUpdateTime,
-                    WeatherDataForDisplayObject.windSpeed,
-                    WeatherDataForDisplayObject.pressure,
-                    WeatherDataForDisplayObject.humidity,
-                    WeatherDataForDisplayObject.minTemp,
-                    WeatherDataForDisplayObject.maxTemp,
-                    WeatherDataForDisplayObject.sunriseTime,
-                    WeatherDataForDisplayObject.sunsetTime
-                )
             job.cancel()
         }
 
