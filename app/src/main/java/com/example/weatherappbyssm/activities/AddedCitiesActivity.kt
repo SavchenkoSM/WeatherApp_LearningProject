@@ -26,9 +26,6 @@ class AddedCitiesActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
         dbHelper = DBHelper(this)
 
-        // Добавление нового города в БД, если он там отсутсвует
-        if (CommonObject.newCityName != "")
-            WorkWithCitiesTableFromDB(this).addNewCityToDB(CommonObject.newCityName.toString())
         // Получение списка городов из БД
         citiesMutableList = WorkWithCitiesTableFromDB(this).getAllCitiesFromDB()
         // Сортировка списка городов по алфавиту

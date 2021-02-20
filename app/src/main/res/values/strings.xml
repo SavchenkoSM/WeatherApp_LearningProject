@@ -11,7 +11,10 @@
     <string name="choose_city">Choose city</string>
     <string name="update_data">update data</string>
     <string name="details">details</string>
-    <string name="exception">Something went wrong. Check your Internet connection.</string>
+    <string name="exception">Something went wrong</string>
+    <string name="try_again">try again</string>
+    <string name="location_permission_denied">Give location permissions for displaying weather for your location</string>
+    <string name="gps_disabled">Please enable GPS for display weather for your location</string>
 
     <string-array name="addedCities">
         <item name="city">Tokyo</item>

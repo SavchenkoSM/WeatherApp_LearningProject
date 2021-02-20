@@ -18,8 +18,11 @@ import com.example.weatherappbyssm.R
 import com.example.weatherappbyssm.common.*
 import com.example.weatherappbyssm.common.ConstantsObject.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
 import com.example.weatherappbyssm.common.ConstantsObject.PERMISSION_REQUEST_CODE
+import com.example.weatherappbyssm.common.ConstantsObject.REQUEST_GPS_CODE
 import com.example.weatherappbyssm.database.DBHelper
 import com.example.weatherappbyssm.database.WorkWithCacheTableFromDB
+import com.example.weatherappbyssm.database.WorkWithCitiesTableFromDB
+import com.example.weatherappbyssm.http.NetworkConnection
 import com.example.weatherappbyssm.http.OkHttpHelper
 import com.example.weatherappbyssm.models.Root
 import com.google.android.gms.common.ConnectionResult
@@ -53,28 +56,33 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private var openWeatherMap = Root()
     private var dbHelper: DBHelper? = null
 
+    private var lat: Double? = null
+    private var lon: Double? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         dbHelper = DBHelper(this)
 
-        if (!CommonObject.isCityChosen)
-            requestLocationPermissions()
-
-        if (isLocationPermissionsGranted && isGooglePlayServicesAvailable()) {
-            if (!CommonObject.isCityChosen)
-                checkLocationServicesEnabled()
-            buildGoogleApiClient()
-        }
-
         if (CommonObject.isCityChosen)
-            WeatherPresenter().execute(
-                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.chosenCityName.toString())
-            )
+            WeatherPresenter().execute()
+        else
+            startWorkWithWeatherByCoordinates()
 
         updateDataImageView.setOnClickListener(this)
         changeCityTextView.setOnClickListener(this)
+    }
+
+    /**
+     * Работа с получением данных о погоде по текущим координатам
+     */
+    private fun startWorkWithWeatherByCoordinates() {
+        requestLocationPermissions()
+        if (isLocationPermissionsGranted && isGooglePlayServicesAvailable()) {
+            checkLocationServicesEnabled()
+            buildGoogleApiClient()
+        }
     }
 
 
@@ -98,8 +106,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 ),
                 PERMISSION_REQUEST_CODE
             )
-        else
+        else {
+            Toast.makeText(
+                this,
+                "Location permissions granted",
+                Toast.LENGTH_SHORT
+            ).show()
+
             isLocationPermissionsGranted = true
+        }
     }
 
     /**
@@ -109,7 +124,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray) {
-
         when (requestCode) {
             PERMISSION_REQUEST_CODE ->
                 if (grantResults.isNotEmpty() &&
@@ -117,17 +131,23 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
                     Toast.makeText(
                         this,
-                        "Permissions granted",
+                        "Location permissions granted",
                         Toast.LENGTH_SHORT).show()
 
                     if (isGooglePlayServicesAvailable()) {
-                        if (!CommonObject.isCityChosen)
-                            checkLocationServicesEnabled()
+                        checkLocationServicesEnabled()
                         buildGoogleApiClient()
                     }
 
-                } else
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Location permissions denied",
+                        Toast.LENGTH_SHORT).show()
+                    errorTextView.text = getString(R.string.location_permission_denied)
+
                     showCacheDataIfExist()
+                }
         }
     }
 
@@ -141,8 +161,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         if (!WeatherDataForDisplayObject.cityName.isNullOrEmpty())
             showWeatherDataUI()
         else {
-            errorTextView.text = getString(R.string.exception)
             errorTextView.visibility = View.VISIBLE
+
+            //buildAlertDialogNoInternet()
         }
     }
 
@@ -172,15 +193,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 this,
                 R.style.AlertDialog
             )
-            alertDialogBuilder.setMessage("GPS is disabled. Please, enable it for the app work")
+            alertDialogBuilder.setMessage(getString(R.string.gps_disabled))
                 .setTitle("GPS disabled")
-                .setCancelable(false)
-                .setNegativeButton("Cancel") {dialog, _ ->
+                .setCancelable(true)
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    errorTextView.text = getString(R.string.gps_disabled)
                     showCacheDataIfExist()
                     dialog.cancel()
                 }
                 .setPositiveButton("Go to Settings") { dialog, _ ->
-                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                    startActivityForResult(
+                        Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS),
+                        REQUEST_GPS_CODE
+                    )
                     dialog.cancel()
                 }
             val alert: AlertDialog = alertDialogBuilder.create()
@@ -288,12 +313,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
      * Обработка изменения текущего местоположения
      */
     override fun onLocationChanged(location: Location?) {
-        WeatherPresenter().execute(
-            CommonObject.apiRequestCurrentWeatherByCoordinates(
-                location?.latitude,
-                location?.longitude
-            )
-        )
+        lat = location?.latitude
+        lon = location?.longitude
+
+        WeatherPresenter().execute()
     }
 
 
@@ -369,17 +392,21 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             job.cancel()
         }
 
-        fun execute(url: String) = launch {
+        fun execute() = launch {
             onPreExecute()
             // Работает в фоновом потоке, не блокируя основной поток
-            val result = doInBackground(url)
+            val result = doInBackground()
             onPostExecute(result)
         }
 
         // Для запуска в фоновом потоке
-        private suspend fun doInBackground(url: String): String = withContext(Dispatchers.IO) {
+        private suspend fun doInBackground(): String = withContext(Dispatchers.IO) {
             val okHttpHelper = OkHttpHelper()
             val response: String
+            val url = if (!CommonObject.isCityChosen)
+                CommonObject.apiRequestCurrentWeatherByCoordinates(lat, lon)
+            else
+                CommonObject.apiRequestCurrentWeatherByCityName(CommonObject.chosenCityName.toString())
 
             response = try {
                 okHttpHelper.makeRequest(url)
@@ -387,6 +414,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 exception.printStackTrace()
                 null.toString()
             }
+
             return@withContext response
         }
 
@@ -407,12 +435,36 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
                 showWeatherImage()
             } catch (exception: Exception) {
                 loaderProgressBar.visibility = View.GONE
-                if (WeatherDataForDisplayObject.cityName != null) {
-                    errorTextView.text = getString(R.string.exception)
-                    errorTextView.visibility = View.VISIBLE
-                }
+
+                if (!NetworkConnection(this@MainActivity).isOnline())
+                    buildAlertDialogNoInternet()
+                else
+                    startWorkWithWeatherByCoordinates()
             }
         }
+    }
+
+    /** Вывод диалогового окна при отсутвии Интернет соединания
+     * с возможностью повторного запуска корутины
+     */
+    private fun buildAlertDialogNoInternet() {
+        val alertDialogBuilder = AlertDialog.Builder(
+            this@MainActivity,
+            R.style.AlertDialog
+        )
+        alertDialogBuilder.setMessage("Please, check your Internet connection and try again")
+            .setTitle("Unstable Internet")
+            .setCancelable(false)
+            .setNegativeButton("No") { dialog, _ ->
+                showCacheDataIfExist()
+                dialog.cancel()
+            }
+            .setPositiveButton("Try again") { dialog, _ ->
+                WeatherPresenter().execute()
+                dialog.cancel()
+            }
+        val alert: AlertDialog = alertDialogBuilder.create()
+        alert.show()
     }
 
     /**
@@ -431,7 +483,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private fun rememberNewCity() {
         if (!CommonObject.isCityChosen) {
             CommonObject.newCityName = openWeatherMap.name
-            updateDataImageView.visibility = View.INVISIBLE
+            // Добавление нового города в БД, если он там отсутсвует
+            if (CommonObject.newCityName != "")
+                WorkWithCitiesTableFromDB(this).addNewCityToDB(CommonObject.newCityName.toString())
         }
     }
 
@@ -468,7 +522,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             "${WeatherDataForDisplayObject.latitude}, ${WeatherDataForDisplayObject.longitude}"
         weatherStatusTextView.text = WeatherDataForDisplayObject.skyStatus
         currentTemperatureTextView.text = "${WeatherDataForDisplayObject.currentTemp.toInt()}°C"
-        tempFeelsLikeTextView.text = "Feels like: ${WeatherDataForDisplayObject.tempFeelsLike.toInt()}°C"
+        tempFeelsLikeTextView.text =
+            "Feels like: ${WeatherDataForDisplayObject.tempFeelsLike.toInt()}°C"
         lastWeatherUpdateAtTextView.text =
             "Updated at: ${WeatherDataForDisplayObject.lastWeatherUpdateTime}"
         windTextView.text = "${WeatherDataForDisplayObject.windSpeed} m/s"
@@ -498,12 +553,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     override fun onClick(view: View?) {
         when (view) {
             updateDataImageView ->
-                if (CommonObject.isCityChosen)
-                    WeatherPresenter().execute(
-                        CommonObject.apiRequestCurrentWeatherByCityName(
-                            CommonObject.chosenCityName.toString()
-                        )
-                    )
+                WeatherPresenter().execute()
             changeCityTextView -> {
                 val mainActivityIntent = Intent(this, AddedCitiesActivity::class.java)
                 mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
