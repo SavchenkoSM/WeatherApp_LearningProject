@@ -14,11 +14,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.bumptech.glide.Glide
 import com.example.weatherappbyssm.R
-import com.example.weatherappbyssm.common.*
+import com.example.weatherappbyssm.common.CommonObject
 import com.example.weatherappbyssm.common.ConstantsObject.GOOGLE_PLAY_SERVICE_RESOLUTION_REQUEST
 import com.example.weatherappbyssm.common.ConstantsObject.PERMISSION_REQUEST_CODE
 import com.example.weatherappbyssm.common.ConstantsObject.REQUEST_GPS_CODE
+import com.example.weatherappbyssm.common.WeatherDataForDisplayObject
 import com.example.weatherappbyssm.database.DBHelper
 import com.example.weatherappbyssm.database.WorkWithCacheTableFromDB
 import com.example.weatherappbyssm.database.WorkWithCitiesTableFromDB
@@ -72,6 +74,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         updateDataImageView.setOnClickListener(this)
         changeCityTextView.setOnClickListener(this)
+
+        Glide.with(this)
+            .load(R.drawable.grey_loader)
+            .into(loadingIcon)
     }
 
     /**
@@ -162,8 +168,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             showWeatherDataUI()
         else {
             errorTextView.visibility = View.VISIBLE
-
-            //buildAlertDialogNoInternet()
         }
     }
 
@@ -290,6 +294,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     private fun locationRequest() {
         locationRequest = LocationRequest()
         locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        if (lat == null && lon == null)
+            loadingContainer.visibility = View.VISIBLE
 
         //Проверка разрешений на определения местополжения
         if (ActivityCompat.checkSelfPermission(
@@ -420,6 +427,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
 
         // Выполнение в основном потоке
         private fun onPreExecute() {
+            loadingContainer.visibility = View.GONE
             mainContainer.visibility = View.GONE
             errorTextView.visibility = View.GONE
             loaderProgressBar.visibility = View.VISIBLE
@@ -443,6 +451,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             }
         }
     }
+
 
     /** Вывод диалогового окна при отсутвии Интернет соединания
      * с возможностью повторного запуска корутины
