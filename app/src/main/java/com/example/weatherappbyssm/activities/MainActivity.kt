@@ -175,6 +175,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             alertDialogBuilder.setMessage("GPS is disabled. Please, enable it for the app work")
                 .setTitle("GPS disabled")
                 .setCancelable(false)
+                .setNegativeButton("Cancel") {dialog, _ ->
+                    showCacheDataIfExist()
+                    dialog.cancel()
+                }
                 .setPositiveButton("Go to Settings") { dialog, _ ->
                     startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                     dialog.cancel()
