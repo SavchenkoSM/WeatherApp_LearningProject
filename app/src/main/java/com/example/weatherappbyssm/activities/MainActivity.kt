@@ -69,7 +69,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         changeCityTextView.setOnClickListener(this)
     }
 
-
     /**
      * Запрос разрешений на доступ к местоположению устройства
      */
