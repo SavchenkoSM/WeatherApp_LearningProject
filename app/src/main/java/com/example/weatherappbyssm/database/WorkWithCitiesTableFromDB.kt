@@ -6,6 +6,10 @@ import android.database.sqlite.SQLiteDatabase
 import android.widget.Toast
 import com.example.weatherappbyssm.R
 
+
+/**
+ * Класс для работы с таблицей городов в БД
+ */
 class WorkWithCitiesTableFromDB(context: Context) : DBHelper(context) {
 
     private lateinit var citiesMutableList: MutableList<String>
@@ -18,7 +22,8 @@ class WorkWithCitiesTableFromDB(context: Context) : DBHelper(context) {
 
         // Запросы к БД
         const val CREATE_CITIES_TABLE =
-            "CREATE TABLE IF NOT EXISTS $CITIES_TABLE_NAME ($COLUMN_ID Integer PRIMARY KEY, $COLUMN_CITY_NAME TEXT)"
+            "CREATE TABLE IF NOT EXISTS $CITIES_TABLE_NAME " +
+                    "($COLUMN_ID Integer PRIMARY KEY, $COLUMN_CITY_NAME TEXT)"
         private const val SELECT_ALL_QUERY = "SELECT * FROM $CITIES_TABLE_NAME"
     }
 
@@ -27,7 +32,8 @@ class WorkWithCitiesTableFromDB(context: Context) : DBHelper(context) {
      */
     fun addDefaultCitiesListToDB(db: SQLiteDatabase?) {
         values = ContentValues()
-        citiesMutableList = context.resources.getStringArray(R.array.addedCities).toMutableList()
+        citiesMutableList =
+            context.resources.getStringArray(R.array.defaultCitiesList).toMutableList()
 
         for (i in 0 until citiesMutableList.size) {
             values.put(COLUMN_CITY_NAME, citiesMutableList[i])
@@ -36,14 +42,14 @@ class WorkWithCitiesTableFromDB(context: Context) : DBHelper(context) {
     }
 
     /**
-     * Запись нового города в БД, без повторов
+     * Запись нового города в БД, без повторов и если переменная города не пуста или не равна null
      */
     fun addNewCityToDB(cityName: String) {
         citiesMutableList = getAllCitiesFromDB()
         db = this.writableDatabase
         values = ContentValues()
 
-        if (!citiesMutableList.contains(cityName)) {
+        if (!(citiesMutableList.contains(cityName) || cityName.isNullOrEmpty())) {
             values.put(COLUMN_CITY_NAME, cityName)
             db.insert(CITIES_TABLE_NAME, null, values)
             db.close()
@@ -53,7 +59,7 @@ class WorkWithCitiesTableFromDB(context: Context) : DBHelper(context) {
     }
 
     /**
-     * Чтение из БД списка городов
+     * Чтение списка городов из БД
      */
     fun getAllCitiesFromDB(): MutableList<String> {
         db = this.readableDatabase

@@ -26,7 +26,7 @@ class NetworkConnection(private val context: Context){
                         Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
                         return true
                     }
-                    // Проверка подкючения по WiFi
+                    // Проверка подкючения по Wi-Fi
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
                         Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
                         return true

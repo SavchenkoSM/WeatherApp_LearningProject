@@ -56,7 +56,8 @@ class WorkWithCacheTableFromDB(context: Context) : DBHelper(context) {
 
     /**
      * Проверка на содержание в таблице пустых ячеек.
-     * Выполняется по одному полю (первому), если оно пустое, то все остальные поля - пустые.
+     * Выполняется по одному полю (первому), если оно пустое или равно null,
+     * то все остальные поля - пустые или равны null.
      */
     fun isCacheTableHasEmptyRow() : Boolean {
         db = this.readableDatabase

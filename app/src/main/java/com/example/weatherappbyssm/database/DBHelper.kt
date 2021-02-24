@@ -22,8 +22,10 @@ open class DBHelper(protected val context: Context) :
         private const val DB_VERSION = 1
 
         //Запросы к БД
-        private const val DROP_CITIES_TABLE_QUERY = "DROP TABLE IF EXISTS ${WorkWithCitiesTableFromDB.CITIES_TABLE_NAME}"
-        private const val DROP_CACHE_TABLE_QUERY = "DROP TABLE IF EXISTS ${WorkWithCacheTableFromDB.CACHE_TABLE_NAME}"
+        private const val DROP_CITIES_TABLE_QUERY =
+            "DROP TABLE IF EXISTS ${WorkWithCitiesTableFromDB.CITIES_TABLE_NAME}"
+        private const val DROP_CACHE_TABLE_QUERY =
+            "DROP TABLE IF EXISTS ${WorkWithCacheTableFromDB.CACHE_TABLE_NAME}"
     }
 
     /**

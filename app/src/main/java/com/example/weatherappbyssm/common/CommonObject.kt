@@ -5,6 +5,9 @@ import com.example.weatherappbyssm.common.ConstantsObject.API_URL
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Объект, задающий основные параметры и методы
+ */
 object CommonObject {
 
     // Вывод текущей даты по формату dd/MM/yyyy HH:mm

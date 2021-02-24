@@ -6,11 +6,13 @@
     android:orientation="vertical"
     android:padding="20dp">
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="100dp" />
+
     <TextView
-        android:id="@+id/cityNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
         android:gravity="center"
         android:text="@string/choose_city"
         android:textAllCaps="true"
@@ -21,10 +23,25 @@
         android:layout_width="match_parent"
         android:layout_height="20dp" />
 
+    <TextView
+        android:id="@+id/currentCityTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:fontFamily="@font/open_sans"
+        android:layout_gravity="center"
+        android:text="@string/show_current_city_weather"
+        android:textColor="@color/warmYellow"
+        android:textSize="16sp" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+
     <ListView
         android:id="@+id/citiesListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="400dp"
         android:choiceMode="singleChoice"
-        android:entries="@array/addedCities" />
+        android:entries="@array/defaultCitiesList" />
+
 </LinearLayout>
