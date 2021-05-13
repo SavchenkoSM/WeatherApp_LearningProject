@@ -9,3 +9,4 @@ Client-server app for displaying weather of the current city and cities from the
 * In network interaction, the server response delay is accompanied by the display of the spinner. 
 * The app provides checks for the lack of the Internet and displays the weather even in the absence of an Internet connection, using cached data, if any.
 * The app provides requests for geolocation and use-GPS permissions, in the absence of which, the application displays special alerts for the user.
+* **API:** OpenWeatherMap
