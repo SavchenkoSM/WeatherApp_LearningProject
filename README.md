@@ -1,6 +1,6 @@
 # WeatherApp [Learning project]
 ### :sun_behind_rain_cloud: Weather App
-Client-server app for displaying weather for current city and for the cities from the list.
+Client-server app for displaying weather of current city and the cities from the list.
 * When the application is launched, it receives the current geolocation and determine the corresponding city name, add it to the list of cities and display the weather for it on the screen.
 * **Functionality**:
    * displaying the weather and its additional characteristics;
